@@ -40,7 +40,7 @@ const allowedSportTypes = ['indoor', 'outdoor'];
 const allowedCities = ['montreal', 'laval', 'chicago'];
 const allowedRegions = ['north', 'south', 'east', 'west'];
 
-app.post('/api/search', authenticateToken, async (req, res, next) => {
+app.post('/api/search', async (req, res, next) => {
   try {
     await db.setCollection('sports');
 

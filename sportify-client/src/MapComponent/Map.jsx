@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import Navbar from '../components/Navbar';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
-import { makeAuthenticatedRequest } from '../utils/api';
 
 const defaultPosition = [45.5019, -73.5674]; // Montreal
 
@@ -45,8 +44,9 @@ const Map = () => {
     if (location) body.city = location.toLowerCase();
 
     try {
-      const res = await makeAuthenticatedRequest("http://localhost:3000/api/search", {
+      const res = await fetch("http://localhost:3000/api/search", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 

@@ -13,6 +13,7 @@ import Register from './components/Register';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function Home() {
+  const { isAuthenticated } = useAuth();
   const sports = [
     { sport: 'Basketball', icon: '🏀', color: 'orange', players: 12, distance: '0.5 km', difficulty: 'medium' },
     { sport: 'Soccer', icon: '⚽', color: 'green', players: 18, distance: '1.2 km', difficulty: 'easy' },
@@ -44,7 +45,7 @@ function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sports.map((sport, index) => (
-            <SportCard key={index} {...sport} />
+            <SportCard key={index} {...sport} isAuthenticated={isAuthenticated} />
           ))}
         </div>
       </div>
@@ -91,33 +92,17 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Always show the Home page */}
+        <Route path="/" element={<Home />} />
+
+        {/* Other routes */}
+        <Route path="/list" element={<SportList />} />
+        <Route path="/map" element={<Map />} />
+        <Route path="/about" element={<About />} />
+
+        {/* Login & Register Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/map"
-          element={
-            <ProtectedRoute>
-              <Map />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/list" element={<SportList />} />
-      <Route
-          path="/about"
-          element={
-            <ProtectedRoute>
-              <About />
-            </ProtectedRoute>
-          }
-        />
       </Routes>
     </AuthProvider>
   );
