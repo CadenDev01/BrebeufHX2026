@@ -1,0 +1,21 @@
+{
+  "name": "SportsFinder",
+  "version": "1.0.0",
+  "description": "This app will show a map with all the coutries color coated with different colors depending of the coutry's GDP. You can select the year. From 1999 to 2025. You can also see each coutry individually and a graph with the GDP each year",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --watch server/bin/www",
+    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+    "test": "mocha ./server/test/*.test.mjs --timeout 10000",
+    "lint": "npx eslint server/**/**/*.mjs client/src/**/*.jsx server/bin/www"
+  },
+  "dependencies": {
+    "eslint": "^9.38.0",
+    "mocha": "^11.7.4",
+    "pm2": "^6.0.13",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "author": "Philip R",
+  "license": "ISC"
+}
