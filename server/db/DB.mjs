@@ -25,7 +25,7 @@ export class DB {
   }
 
   // Connect to a database (lazy)
-  async connect(dbName = cluster) {
+  async connect(dbName = "test") {
     if (this.db) return;
 
     this.mongoClient = new MongoClient(dbUrl, {
@@ -51,6 +51,13 @@ export class DB {
     if (!instance.db) throw new Error('DB not connected. Call connect() first.');
     instance.collection = instance.db.collection(collectionName);
     console.log(`Collection set to ${collectionName}`);
+  }
+
+  find(filter = {}) {
+    if (!this.collection) {
+      throw new Error('Collection not set. Call setCollection() first.');
+    }
+    return this.collection.find(filter); 
   }
 
   async createMany(documents) {

@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
 
 if(db.db === null) await db.connect();
+await db.setCollection('sports');
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -37,11 +38,13 @@ app.get('/', (req, res) => {
 // Example allowed lists
 const allowedSports = ['soccer', 'basketball', 'tennis'];
 const allowedSportTypes = ['indoor', 'outdoor'];
-const allowedCities = ['new york', 'los angeles', 'chicago'];
+const allowedCities = ['montreal', 'laval', 'chicago'];
 const allowedRegions = ['north', 'south', 'east', 'west'];
 
-app.post('/search', authenticateToken, async (req, res, next) => {
+app.post('/api/search', authenticateToken, async (req, res, next) => {
   try {
+    await db.setCollection('sports');
+
     const {
       sport,
       sportType,
@@ -53,69 +56,61 @@ app.post('/search', authenticateToken, async (req, res, next) => {
 
     const query = {};
 
-    // Validate sport
     if (sport !== undefined) {
-      const sportNormalized = String(sport).trim().toLowerCase();
-      if (!allowedSports.includes(sportNormalized)) {
-        return res.status(400).json({ error: `"sport" must be one of: ${allowedSports.join(', ')}` });
-      }
-      query.sport = sportNormalized;
+      query.sport = String(sport).trim().toLowerCase();
     }
 
-    // Validate sportType
     if (sportType !== undefined) {
-      const sportTypeNormalized = String(sportType).trim().toLowerCase();
-      if (!allowedSportTypes.includes(sportTypeNormalized)) {
-        return res.status(400).json({ error: `"sportType" must be one of: ${allowedSportTypes.join(', ')}` });
-      }
-      query.sportType = sportTypeNormalized;
+      query.sport_type = String(sportType).trim().toLowerCase();
     }
 
-    // Validate sportLocation
     if (sportLocation !== undefined) {
-      const locationNormalized = String(sportLocation).trim().toLowerCase();
-      query.sportLocation = locationNormalized;
+      query.sport_location = String(sportLocation).trim().toLowerCase();
     }
 
-    // Validate city
     if (city !== undefined) {
-      const cityNormalized = String(city).trim().toLowerCase();
-      if (!allowedCities.includes(cityNormalized)) {
-        return res.status(400).json({ error: `"city" must be one of: ${allowedCities.join(', ')}` });
-      }
-      query.city = cityNormalized;
+      query.city = String(city).trim().toLowerCase();
     }
 
-    // Validate region
     if (region !== null) {
-      const regionNormalized = String(region).trim().toLowerCase();
-      if (!allowedRegions.includes(regionNormalized)) {
-        return res.status(400).json({ error: `"region" must be one of: ${allowedRegions.join(', ')}` });
-      }
-      query.region = regionNormalized;
+      query.region = String(region).trim().toLowerCase();
     }
 
-    // Execute query
-    let resultsQuery = db.find(query);
+    console.log('Query:', query);
 
-    // Validate and apply limit
+    let cursor = db.find(query);
+
     if (limit !== null) {
       if (!Number.isInteger(limit) || limit <= 0) {
-        return res.status(400).json({ error: '"limit" must be a positive integer if provided' });
+        return res.status(400).json({ error: '"limit" must be a positive integer' });
       }
-      resultsQuery = resultsQuery.limit?.(limit) ?? resultsQuery.slice(0, limit);
+      cursor = cursor.limit(limit);
     }
 
-    const results = await resultsQuery.toArray?.() ?? resultsQuery; // note: must test
+    const results = await cursor.toArray();
 
     res.status(200).json(results);
-
   } catch (err) {
     next(err);
   }
 });
 
+app.get('/api/sports', async (req, res, next) => {
+  try {
+    await db.setCollection('sports');
 
+    const sports = await db.collection.aggregate([
+      { $group: { _id: "$sport" } } // Group by sport to get unique values
+    ]).toArray();
+
+    const distinctSports = sports.map(sport => sport._id); // Extract distinct sports
+
+    res.status(200).json(distinctSports); // Return the distinct sports
+  } catch (err) {
+    console.error('Error fetching sports:', err);
+    next(err);  // Pass the error to the global error handler
+  }
+});
 
 app.post('/userEvents', authenticateToken, async (req, res, next) => {
   try {

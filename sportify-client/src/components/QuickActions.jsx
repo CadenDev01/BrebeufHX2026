@@ -1,3 +1,10 @@
+/**
+ * QuickActions component for Sportify.
+ * Displays a set of quick action buttons for user convenience.
+ * Actions include quick suggestion, nearby activities, joining groups, and scheduling a game.
+ *
+ * @component
+ */
 const QuickActions = () => {
   const actions = [
     { label: 'Quick Suggestion' },

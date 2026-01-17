@@ -5,7 +5,9 @@ import QuickActions from './components/QuickActions'
 import ChatBot from './components/ChatBot'
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Map from './MapComponent/Map';
+import SportList from './SportCardList/SportList';
 import About from "./AboutUs"
+import { Link } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -34,10 +36,10 @@ function Home() {
       {/* Sports Grid */}
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">Available Sports</h2>
-          <button className="text-purple-400 hover:text-purple-300 font-medium text-sm">
+          <h2 id="available-sports" className="text-2xl font-bold">Available Sports</h2>
+          <Link to='/list' className="text-purple-400 hover:text-purple-300 font-medium text-sm">
             View All
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -107,7 +109,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
+        <Route path="/list" element={<SportList />} />
+      <Route
           path="/about"
           element={
             <ProtectedRoute>

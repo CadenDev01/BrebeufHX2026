@@ -1,0 +1,26 @@
+sport,sport_type,sport_location,city,region,latitude,longitude
+soccer,ball sports,parc jarry,montréal,québec,45.5308,-73.6298
+soccer,ball sports,parc lafontaine,montréal,québec,45.5275,-73.5695
+soccer,ball sports,complexe sportif claude-robillard,montréal,québec,45.5344,-73.6267
+basketball,ball sports,parc jarry,montréal,québec,45.5308,-73.6298
+basketball,ball sports,parc maisonneuve,montréal,québec,45.5523,-73.5505
+basketball,ball sports,parc lafontaine,montréal,québec,45.5275,-73.5695
+tennis,ball sports,parc jarry,montréal,québec,45.5308,-73.6298
+tennis,ball sports,parc lafontaine,montréal,québec,45.5275,-73.5695
+tennis,ball sports,parc maisonneuve,montréal,québec,45.5523,-73.5505
+volleyball,ball sports,parc jarry,montréal,québec,45.5308,-73.6298
+volleyball,ball sports,plage de verdun,montréal,québec,45.4577,-73.5703
+ice hockey,ice sports,aréna martin-brodeur,montréal,québec,45.5860,-73.6008
+ice hockey,ice sports,centre bell,montréal,québec,45.4961,-73.5693
+ice hockey,ice sports,complexe sportif claude-robillard,montréal,québec,45.5344,-73.6267
+swimming,water sports,piscine olympique,montréal,québec,45.5579,-73.5515
+swimming,water sports,centre aquatique de verdun,montréal,québec,45.4563,-73.5660
+running,multi-sport,parc du mont-royal,montréal,québec,45.5048,-73.5874
+cycling,multi-sport,parc du mont-royal,montréal,québec,45.5048,-73.5874
+skateboarding,board sports,parc lafontaine,montréal,québec,45.5275,-73.5695
+skateboarding,board sports,skatepark de verdun,montréal,québec,45.4567,-73.5689
+soccer,ball sports,parc des rapides,lasalle,québec,45.4305,-73.5893
+basketball,ball sports,parc bois-de-liesse,laval,québec,45.5069,-73.7556
+tennis,ball sports,parc de la rivière,laval,québec,45.5573,-73.7236
+ice hockey,ice sports,centre de la nature,laval,québec,45.5675,-73.7127
+swimming,water sports,centre aquatique de laval,laval,québec,45.5618,-73.7493

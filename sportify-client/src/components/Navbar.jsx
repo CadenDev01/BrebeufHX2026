@@ -1,8 +1,18 @@
 import sportifyLogo from '../assets/sportify_logo.png'
-
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * Navbar component for Sportify.
+ * Displays the logo, navigation links, and call-to-action buttons.
+ * Uses React Router for navigation.
+ *
+ * @component
+ * @example
+ * return (
+ *   <Navbar />
+ * )
+ */
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -15,12 +25,12 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <Link to='/' className="flex items-center gap-3">
             <img src={sportifyLogo} alt="Sportify" className="h-9 w-9 object-contain" />
             <h1 className="text-xl font-bold text-white">
               Sportify
             </h1>
-          </div>
+          </Link>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
