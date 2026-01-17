@@ -11,8 +11,9 @@ import { Link } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import React, { useState, useEffect } from 'react';
 
-function Home() {
+function Home({ isAuthenticated }) {
   const sports = [
     { sport: 'Basketball', icon: '🏀', color: 'orange', players: 12, distance: '0.5 km', difficulty: 'medium' },
     { sport: 'Soccer', icon: '⚽', color: 'green', players: 18, distance: '1.2 km', difficulty: 'easy' },
@@ -44,7 +45,7 @@ function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sports.map((sport, index) => (
-            <SportCard key={index} {...sport} />
+            <SportCard key={index} {...sport} isAuthenticated={isAuthenticated} />
           ))}
         </div>
       </div>
@@ -88,36 +89,50 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Simulate a check for authentication status
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      // Simulate loading time (e.g., checking a token, session, etc.)
+      setLoading(true);
+      setTimeout(() => {
+        const userAuthStatus = localStorage.getItem('isAuthenticated') === 'true'; // Simulate localStorage or cookie check
+        setIsAuthenticated(userAuthStatus);
+        setLoading(false);
+      }, 1000); // simulate 1 second delay
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthProvider>
       <Routes>
+        {/* Always show the Home page */}
+        <Route path="/" element={<Home isAuthenticated={isAuthenticated} />} />
+
+        {/* Other routes */}
+        <Route path="/list" element={<SportList />} />
+        <Route path="/map" element={<Map />} />
+        <Route path="/about" element={<About />} />
+
+        {/* Login & Register Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/map"
-          element={
-            <ProtectedRoute>
-              <Map />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/list" element={<SportList />} />
-      <Route
-          path="/about"
-          element={
-            <ProtectedRoute>
-              <About />
-            </ProtectedRoute>
-          }
-        />
       </Routes>
     </AuthProvider>
   );
