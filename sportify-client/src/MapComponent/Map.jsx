@@ -3,9 +3,11 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
 import AutocompleteSearchBar from './SearchBar';
+import { useAuth } from '../context/AuthContext';
 
 const defaultPosition = [45.5019, -73.5674]; // Montreal
 
@@ -41,6 +43,7 @@ const RecenterMap = ({ position }) => {
 };
 
 const Map = () => {
+  const { user } = useAuth();
   const [activity, setActivity] = useState('');
   const [location, setLocation] = useState('');
   const [venue, setVenue] = useState('');
@@ -49,6 +52,9 @@ const Map = () => {
   const [loading, setLoading] = useState(false);
   const [mapZoom, setMapZoom] = useState(12);
   const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const currentUserId = user?._id || null;
+  console.log({filteredResults});
 
   // Function to scroll to and center map on a specific item
   const handleViewOnMap = (item) => {
@@ -77,6 +83,14 @@ const Map = () => {
     } catch (error) {
       console.error('Error in handleViewOnMap:', error);
     }
+  };
+
+  const handleJoinSuccess = (eventId, attendee) => {
+    setFilteredResults(prev => prev.map(r => 
+      r._id === eventId 
+        ? { ...r, attendees: [...(r.attendees || []), attendee] }
+        : r
+    ));
   };
 
   // Check URL parameters on mount (for "View All" or sport-specific links)
@@ -236,7 +250,11 @@ const Map = () => {
                     }
                   }}
                 >
-                  <MapPopup item={mapItem} />
+                  <MapPopup 
+                    item={mapItem} 
+                    currentUserId={currentUserId} 
+                    onJoinSuccess={handleJoinSuccess} 
+                  />
                 </Marker>
               );
             })}
@@ -244,11 +262,14 @@ const Map = () => {
         </div>
 
         {/* Results Table */}
-        <ResultTable 
+        <ResultTable
           results={filteredResults}
+          currentUserId={currentUserId}
+          onJoinSuccess={handleJoinSuccess}
           onViewOnMap={handleViewOnMap}
         />
       </div>
+      <Footer />
     </>
   );
 };
