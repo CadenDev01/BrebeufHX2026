@@ -6,6 +6,7 @@ import ChatBot from './components/ChatBot'
 import { Routes, Route } from 'react-router-dom';
 import Map from './MapComponent/Map';
 import About from "./AboutUs"
+import { Link } from 'react-router-dom';
 
 function Home() {
   const sports = [
@@ -32,9 +33,9 @@ function Home() {
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 id="available-sports" className="text-2xl font-bold">Available Sports</h2>
-          <button className="text-purple-400 hover:text-purple-300 font-medium text-sm">
+          <Link to='/map' className="text-purple-400 hover:text-purple-300 font-medium text-sm">
             View All
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
