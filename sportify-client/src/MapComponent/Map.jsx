@@ -1,12 +1,36 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import Navbar from '../components/Navbar';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
-import AutocompleteSearchBar from '../components/SearchBar';
+import AutocompleteSearchBar from './SearchBar';
 import { makeAuthenticatedRequest } from '../utils/api';
 
 const defaultPosition = [45.5019, -73.5674]; // Montreal
+
+// Create custom icon with different colors
+const createIcon = (color) => {
+  return new L.DivIcon({
+    className: 'custom-marker',
+    html: `<div style="
+      background-color: ${color};
+      width: 25px;
+      height: 25px;
+      border-radius: 50% 50% 50% 0;
+      border: 3px solid white;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    "></div>`,
+    iconSize: [25, 25],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+  });
+};
+
+const redIcon = createIcon('#ef4444');
+const blueIcon = createIcon('#3b82f6');
 
 // Component to dynamically recenter the map
 const RecenterMap = ({ position }) => {
@@ -24,6 +48,37 @@ const Map = () => {
   const [filteredResults, setFilteredResults] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultPosition);
   const [loading, setLoading] = useState(false);
+  const [mapZoom, setMapZoom] = useState(12);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  // Function to scroll to and center map on a specific item
+  const handleViewOnMap = (item) => {
+    try {
+      console.log('Viewing on map:', item);
+      
+      const lat = Number(item.latitude);
+      const lng = Number(item.longitude);
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        console.error('Invalid coordinates:', item.latitude, item.longitude);
+        return;
+      }
+      
+      setMapCenter([lat, lng]);
+      setMapZoom(15); // Zoom in closer when viewing specific location
+      setSelectedLocation(`${lat},${lng}`); // Store the selected location
+      
+      // Scroll to map after a short delay to allow state to update
+      setTimeout(() => {
+        const mapElement = document.getElementById('activity-map');
+        if (mapElement) {
+          mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error in handleViewOnMap:', error);
+    }
+  };
 
   // Check URL parameters on mount (for "View All" or sport-specific links)
   useEffect(() => {
@@ -35,9 +90,8 @@ const Map = () => {
       handleSearch();
     } else if (sportParam) {
       setActivity(sportParam);
-      // Optionally auto-search when coming from sport list
-      // setTimeout(() => handleSearch(), 100);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = async () => {
@@ -140,10 +194,11 @@ const Map = () => {
         </div>
 
         {/* Map Container */}
-        <div className="w-full max-w-3xl">
+        <div id="activity-map" className="w-full max-w-3xl">
           <MapContainer
             center={mapCenter}
-            zoom={12}
+            zoom={mapZoom}
+            key={`${mapCenter[0]}-${mapCenter[1]}`}
             style={{ height: "500px", width: "100%" }}
             className="rounded-lg shadow-lg relative"
           >
@@ -161,16 +216,38 @@ const Map = () => {
             )}
 
             {/* Markers */}
-            {!loading && filteredResults.map((mapItem, idx) => (
-              <Marker key={idx} position={[mapItem.latitude, mapItem.longitude]}>
-                <MapPopup item={mapItem} />
-              </Marker>
-            ))}
+            {!loading && filteredResults.map((mapItem, idx) => {
+              const lat = Number(mapItem.latitude);
+              const lng = Number(mapItem.longitude);
+              
+              if (isNaN(lat) || isNaN(lng)) return null;
+              
+              const locationKey = `${lat},${lng}`;
+              const isSelected = locationKey === selectedLocation;
+              
+              return (
+                <Marker 
+                  key={`marker-${idx}`}
+                  position={[lat, lng]}
+                  icon={isSelected ? redIcon : blueIcon}
+                  eventHandlers={{
+                    click: () => {
+                      setSelectedLocation(locationKey);
+                    }
+                  }}
+                >
+                  <MapPopup item={mapItem} />
+                </Marker>
+              );
+            })}
           </MapContainer>
         </div>
 
         {/* Results Table */}
-        <ResultTable results={filteredResults} />
+        <ResultTable 
+          results={filteredResults}
+          onViewOnMap={handleViewOnMap}
+        />
       </div>
     </>
   );
