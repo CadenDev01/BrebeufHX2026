@@ -5,6 +5,7 @@ import QuickActions from './components/QuickActions'
 import ChatBot from './components/ChatBot'
 import { Routes, Route } from 'react-router-dom';
 import Map from './MapComponent/Map';
+import SportList from './SportCardList/SportList';
 import About from "./AboutUs"
 import { Link } from 'react-router-dom';
 
@@ -33,7 +34,7 @@ function Home() {
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 id="available-sports" className="text-2xl font-bold">Available Sports</h2>
-          <Link to='/map' className="text-purple-400 hover:text-purple-300 font-medium text-sm">
+          <Link to='/list' className="text-purple-400 hover:text-purple-300 font-medium text-sm">
             View All
           </Link>
         </div>
@@ -71,6 +72,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/map" element={<Map />} />
+      <Route path="/list" element={<SportList />} />
       <Route path="/About" element={<About />} /> 
     </Routes>
   );

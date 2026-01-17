@@ -80,6 +80,20 @@ app.post('/api/search', async (req, res, next) => {
   }
 });
 
+app.get('/api/sports', async (req, res, next) => {
+  try {
+    const sports = await db.collection.aggregate([
+      { $group: { _id: "$sport" } } // Group by sport to get unique values
+    ]).toArray();
+
+    const distinctSports = sports.map(sport => sport._id); // Extract distinct sports
+
+    res.status(200).json(distinctSports); // Return the distinct sports
+  } catch (err) {
+    console.error('Error fetching sports:', err);
+    next(err);  // Pass the error to the global error handler
+  }
+});
 
 
 

@@ -52,7 +52,7 @@ const SportCard = ({ sport, players, distance, difficulty }) => {
         </div>
 
         <button className="w-full bg-purple-600 hover:bg-purple-700 rounded-lg py-2.5 px-4 font-medium text-sm transition-colors duration-200">
-          Find Game
+          Find Community
         </button>
       </div>
     </div>
