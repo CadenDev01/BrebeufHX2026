@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
-import ResultTable from './MapComponent/ResultsTable';
+import ResultTable from './ResultTable';
 
 const position = [45.5019, -73.5674]; // Montreal
 

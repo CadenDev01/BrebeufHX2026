@@ -5,6 +5,7 @@ import QuickActions from './components/QuickActions'
 import ChatBot from './components/ChatBot'
 import { Routes, Route } from 'react-router-dom';
 import Map from './MapComponent/Map';
+import About from "./AboutUs"
 
 function Home() {
   const sports = [
@@ -69,6 +70,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/map" element={<Map />} />
+      <Route path="/About" element={<About />} /> 
     </Routes>
   );
 }

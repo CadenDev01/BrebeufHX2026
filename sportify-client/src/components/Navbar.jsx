@@ -23,7 +23,7 @@ const Navbar = () => {
             <Link to="/map" className="text-gray-300 hover:text-white transition-colors font-medium">
               Find Activities
             </Link>
-            <Link to="/About" className="text-gray-300 hover:text-white transition-colors font-medium">
+            <Link to="/about" className="text-gray-300 hover:text-white transition-colors font-medium">
               About Us
             </Link>
           </div>
