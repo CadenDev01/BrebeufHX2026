@@ -7,7 +7,7 @@
  * Features:
  * - Floating chat button with toggle functionality
  * - Real-time message streaming with loading states
- * - Integration with OpenRouter API using Claude 3.5 Sonnet model
+ * - Integration with OpenRouter API using Claude Opus 4.5 (most powerful model)
  * - Quick action buttons for common queries
  * - Keyboard shortcuts (Enter to send, Shift+Enter for new line)
  *
@@ -19,6 +19,7 @@
  */
 
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const ChatBot = () => {
   /**
@@ -64,7 +65,7 @@ const ChatBot = () => {
    *
    * API Configuration:
    * - Endpoint: OpenRouter API (https://openrouter.ai/api/v1/chat/completions)
-   * - Model: Claude 3.5 Sonnet (anthropic/claude-3.5-sonnet)
+   * - Model: Claude Opus 4.5 (anthropic/claude-opus-4.5)
    * - Max tokens: 1024
    * - System prompt: Configured for sports assistance with friendly, enthusiastic tone
    *
@@ -96,8 +97,8 @@ const ChatBot = () => {
           'X-Title': 'Sportify'
         },
         body: JSON.stringify({
-          // Specify Claude 3.5 Sonnet model through OpenRouter
-          model: 'anthropic/claude-3.5-sonnet',
+          // Specify Claude Opus 4.5 (most powerful version) through OpenRouter
+          model: 'anthropic/claude-opus-4.5',
           messages: [
             {
               role: 'system',
@@ -208,8 +209,21 @@ const ChatBot = () => {
                       : 'bg-slate-800 text-gray-100 border border-purple-500/20'
                   }`}
                 >
-                  {/* Preserve whitespace and line breaks in messages */}
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {/* Render markdown for AI messages, plain text for user messages */}
+                  {msg.role === 'assistant' ? (
+                    <div className="text-sm prose prose-invert prose-sm max-w-none
+                      prose-headings:text-purple-300 prose-headings:font-bold prose-headings:mt-3 prose-headings:mb-2
+                      prose-p:my-1 prose-p:leading-relaxed
+                      prose-ul:my-1 prose-ul:list-disc prose-ul:pl-4
+                      prose-ol:my-1 prose-ol:list-decimal prose-ol:pl-4
+                      prose-li:my-0.5
+                      prose-strong:text-white prose-strong:font-semibold
+                      prose-code:text-purple-300 prose-code:bg-slate-900/50 prose-code:px-1 prose-code:rounded">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  )}
                 </div>
               </div>
             ))}
