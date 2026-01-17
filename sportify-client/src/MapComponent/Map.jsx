@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
-import ResultTable from './ResultTable';
+import ResultsTable from "./ResultTable";
 
 const position = [45.5019, -73.5674]; // Montreal
 
@@ -12,23 +12,37 @@ const Map = () => {
   const [venue, setVenue] = useState('');
   const [filteredResults, setFilteredResults] = useState([]);
 
-  const handleSearch = () => {
-  // Basic validation: prevent empty or suspicious input
+  const handleSearch = async () => {
   const isValid = (str) =>
     typeof str === "string" &&
     str.length <= 100 &&
-    /^[\w\s\-.,']*$/i.test(str); // Only allow letters, numbers, spaces, and some punctuation
+    /^[\w\s\-.,']*$/i.test(str);
 
   if (![activity, location, venue].every(isValid)) {
-    alert("Invalid input detected. Please use only letters, numbers, spaces, and basic punctuation.");
+    alert("Invalid input detected.");
     return;
   }
 
-  fetch(
-    `/api/filter?activity=${encodeURIComponent(activity)}&location=${encodeURIComponent(location)}&venue=${encodeURIComponent(venue)}`
-  )
-    .then((res) => res.json())
-    .then((data) => setFilteredResults(data.results || []));
+  const body = {};
+  if (activity) body.sport = activity.toLowerCase();
+  if (venue) body.sportLocation = venue.toLowerCase();
+  if (location) body.city = location.toLowerCase();
+
+  try {
+    const res = await fetch("/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("Search failed");
+
+    const data = await res.json();
+    setFilteredResults(data);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to fetch results");
+  }
 };
 
   return (
@@ -75,14 +89,18 @@ const Map = () => {
               attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <Marker position={position}>
-              <Popup>
-                Montreal
-              </Popup>
-            </Marker>
+             {filteredResults.map((item, idx) => (
+                <Marker key={idx} position={[item.latitude, item.longitude]}>
+                  <Popup>
+                    <strong>{item.sport}</strong><br />
+                    {item.venue}<br />
+                    {item.city}
+                  </Popup>
+                </Marker>
+              ))}
           </MapContainer>
         </div>
-        <ResultTable results = {filteredResults} />
+        <ResultsTable results={filteredResults} />
       </div>
     </>
   );
