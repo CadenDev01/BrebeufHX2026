@@ -10,6 +10,8 @@ services:
       - NODE_ENV=production
     env_file:
       - ./server/.env
+    networks:
+      - app-network
 
   frontend:
     build: ./sportify-client
@@ -18,3 +20,9 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
