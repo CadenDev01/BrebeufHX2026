@@ -10,6 +10,7 @@ const SearchBar = ({
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Use the endpoint prop or fallback to a default
   const ENDPOINT = endpoint || "https://your-api.com/search?q=";
@@ -17,13 +18,24 @@ const SearchBar = ({
   useEffect(() => {
     if (!value) {
       setSuggestions([]);
+      setError(null);
       return;
     }
     setLoading(true);
+    setError(null);
     fetch(`${ENDPOINT}${encodeURIComponent(value)}`)
-      .then((res) => res.json())
-      .then((data) => setSuggestions(data.results || []))
-      .catch(() => setSuggestions([]))
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then((data) => {
+        setSuggestions(data.results || []);
+        setError(null);
+      })
+      .catch(() => {
+        setSuggestions([]);
+        setError("Failed to fetch suggestions.");
+      })
       .finally(() => setLoading(false));
   }, [value, ENDPOINT]);
 
@@ -56,10 +68,13 @@ const SearchBar = ({
           Search
         </button>
       )}
-      {showDropdown && (suggestions.length > 0 || loading) && (
+      {showDropdown && (suggestions.length > 0 || loading || error) && (
         <ul className="absolute left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow z-10 max-h-60 overflow-y-auto">
           {loading && (
             <li className="px-4 py-2 text-gray-400">Loading...</li>
+          )}
+          {error && (
+            <li className="px-4 py-2 text-red-500">{error}</li>
           )}
           {suggestions.map((item, idx) => (
             <li
