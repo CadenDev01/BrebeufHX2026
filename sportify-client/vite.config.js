@@ -26,4 +26,24 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/search': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/userEvents': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/addUserToEvent': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
+    }
+  }
 });

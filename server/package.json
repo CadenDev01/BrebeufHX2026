@@ -4,15 +4,18 @@
   "description": "This app will show a map with all the coutries color coated with different colors depending of the coutry's GDP. You can select the year. From 1999 to 2025. You can also see each coutry individually and a graph with the GDP each year",
   "main": "index.js",
   "scripts": {
-    "start": "node --watch server/bin/www",
+    "start": "node --watch api.mjs",
     "build": "cd client && npm install && npm run build && cd ../server && npm install",
     "test": "mocha ./server/test/*.test.mjs --timeout 10000",
-    "lint": "npx eslint server/**/**/*.mjs client/src/**/*.jsx server/bin/www"
+    "lint": "npx eslint server/**/**/*.mjs client/src/**/*.jsx"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
+    "cors": "^2.8.5",
     "csv-parse": "^6.1.0",
     "eslint": "^9.38.0",
+    "jsonwebtoken": "^9.0.3",
     "mocha": "^11.7.4",
     "mongodb": "^7.0.0",
     "pm2": "^6.0.13",
