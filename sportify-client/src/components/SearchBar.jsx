@@ -1,68 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const SearchBar = ({ onSearch, endpoint }) => {
-  const [query, setQuery] = useState("");
+const SearchBar = ({
+  value,
+  onChange,
+  placeholder = "Search...",
+  showButton = true,
+  endpoint,
+}) => {
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Replace this URL with your actual endpoint
+  // Use the endpoint prop or fallback to a default
   const ENDPOINT = endpoint || "https://your-api.com/search?q=";
 
-  const fetchSuggestions = async (q) => {
-    if (!q) {
+  useEffect(() => {
+    if (!value) {
       setSuggestions([]);
       return;
     }
     setLoading(true);
-    try {
-      const res = await fetch(`${ENDPOINT}${encodeURIComponent(q)}`);
-      const data = await res.json();
-      setSuggestions(data.results || []);
-    } catch (e) {
-      setSuggestions([]);
-    }
-    setLoading(false);
-  };
+    fetch(`${ENDPOINT}${encodeURIComponent(value)}`)
+      .then((res) => res.json())
+      .then((data) => setSuggestions(data.results || []))
+      .catch(() => setSuggestions([]))
+      .finally(() => setLoading(false));
+  }, [value, ENDPOINT]);
 
   const handleChange = (e) => {
-    const value = e.target.value;
-    setQuery(value);
+    onChange(e.target.value);
     setShowDropdown(true);
-    fetchSuggestions(value);
   };
 
   const handleSelect = (item) => {
-    setQuery(item);
+    onChange(item.name || item);
     setShowDropdown(false);
-    if (onSearch) onSearch(item);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setShowDropdown(false);
-    if (onSearch) onSearch(query);
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mb-6 relative">
-      <form onSubmit={handleSubmit} className="flex">
-        <input
-          type="text"
-          className="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none"
-          placeholder="Search for a location or activity..."
-          value={query}
-          onChange={handleChange}
-          onFocus={() => setShowDropdown(true)}
-          autoComplete="off"
-        />
+    <div className="w-full max-w-xs relative">
+      <input
+        type="text"
+        className="w-full px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none"
+        placeholder={placeholder}
+        value={value}
+        onChange={handleChange}
+        onFocus={() => setShowDropdown(true)}
+        autoComplete="off"
+      />
+      {showButton && (
         <button
           type="submit"
-          className="px-4 py-2 bg-purple-600 text-white rounded-r-lg hover:bg-purple-700 transition"
+          className="px-4 py-2 bg-purple-600 text-white rounded-r-lg hover:bg-purple-700 transition absolute right-0 top-0 h-full"
         >
           Search
         </button>
-      </form>
+      )}
       {showDropdown && (suggestions.length > 0 || loading) && (
         <ul className="absolute left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow z-10 max-h-60 overflow-y-auto">
           {loading && (
