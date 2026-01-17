@@ -38,7 +38,7 @@ const AutocompleteSearchBar = ({
         setIsSearching(true);
         
         // Fetch all data
-        const res = await makeAuthenticatedRequest("http://localhost:3000/api/search", {
+        const res = await makeAuthenticatedRequest("/api/search", {
           method: "POST",
           body: JSON.stringify({}),
           signal: controller.signal,
