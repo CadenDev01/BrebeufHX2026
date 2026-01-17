@@ -3,10 +3,6 @@ import Hero from './components/Hero'
 import SportCard from './components/SportCard'
 import QuickActions from './components/QuickActions'
 import ChatBot from './components/ChatBot'
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import SportCard from './components/SportCard';
-import QuickActions from './components/QuickActions';
 import { Routes, Route } from 'react-router-dom';
 import Map from './MapComponent/Map';
 
