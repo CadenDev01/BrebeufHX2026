@@ -25,7 +25,7 @@ export class DB {
   }
 
   // Connect to a database (lazy)
-  async connect(dbName = cluster) {
+  async connect(dbName = "Testdb") {
     if (this.db) return;
 
     this.mongoClient = new MongoClient(dbUrl, {
