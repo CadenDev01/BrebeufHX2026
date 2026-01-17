@@ -1,4 +1,4 @@
-import { db } from '../db/db.mjs';
+import { db } from './db/DB.mjs';
 import fs from 'fs/promises';
 //https://csv.js.org/parse/api/sync/
 import { parse } from 'csv-parse/sync';

@@ -1,0 +1,6 @@
+username,email,age,isActive,roles,createdAt,firstName,lastName,location
+test_user1,user1@example.com,22,true,"user",2026-01-16T12:00:00Z,Alice,Smith,USA
+test_user2,user2@example.com,30,false,"user|admin",2026-01-15T09:30:00Z,Bob,Johnson,Canada
+test_user3,user3@example.com,27,true,"moderator",2026-01-14T18:45:00Z,Carol,Lee,UK
+test_user4,user4@example.com,35,true,"user|editor",2026-01-13T14:20:00Z,David,Martinez,Spain
+test_user5,user5@example.com,19,false,"user",2026-01-12T08:10:00Z,Eva,Nguyen,Vietnam

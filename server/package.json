@@ -10,8 +10,11 @@
     "lint": "npx eslint server/**/**/*.mjs client/src/**/*.jsx server/bin/www"
   },
   "dependencies": {
+    "compression": "^1.8.1",
+    "csv-parse": "^6.1.0",
     "eslint": "^9.38.0",
     "mocha": "^11.7.4",
+    "mongodb": "^7.0.0",
     "pm2": "^6.0.13",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
