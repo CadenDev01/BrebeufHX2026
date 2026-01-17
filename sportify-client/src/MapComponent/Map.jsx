@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import Navbar from '../components/Navbar';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
+import { makeAuthenticatedRequest } from '../utils/api';
 
 const defaultPosition = [45.5019, -73.5674]; // Montreal
 
@@ -44,22 +45,22 @@ const Map = () => {
     if (location) body.city = location.toLowerCase();
 
     try {
-      const res = await fetch("/api/search", {
+      const res = await makeAuthenticatedRequest("http://localhost:3000/api/search", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error("Search failed");
 
       const data = await res.json();
+      console.log('Search results:', data);
 
-      const withCoords = data.filter(item =>
-        item.latitude !== "" &&
-        item.longitude !== "" &&
-        item.latitude !== null &&
-        item.longitude !== null
-      );
+      const withCoords = data.filter(item => {
+        const lat = Number(item.latitude);
+        const lng = Number(item.longitude);
+        return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+      });
+      console.log('Results with coords:', withCoords.map(i => ({ lat: i.latitude, lng: i.longitude, sport: i.sport })));
 
       setFilteredResults(withCoords);
 

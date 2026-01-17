@@ -12,8 +12,8 @@ const MapPopup = ({ item }) => {
   return (
     <Popup>
       <strong>Name: {getDisplayValue(item.sport)}</strong><br />
-      <em>Type: {getDisplayValue(item.sportType)}</em><br />
-      Venue/Location: {getDisplayValue(item.sportLocation)}<br />
+      <em>Type: {getDisplayValue(item.sport_type)}</em><br />
+      Venue/Location: {getDisplayValue(item.sport_location)}<br />
       City: {getDisplayValue(item.city)}, Region: {getDisplayValue(item.region)}<br />
       <small>Latitude: {getDisplayValue(item.latitude)}, Longitude: {getDisplayValue(item.longitude)}</small><br />
       

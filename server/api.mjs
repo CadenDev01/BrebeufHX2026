@@ -8,7 +8,7 @@ import authRoutes from './routes/auth.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
 
 if(db.db === null) await db.connect();
-await db.setCollection('ProjectCollecion');
+await db.setCollection('sports');
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -40,7 +40,7 @@ const allowedSportTypes = ['indoor', 'outdoor'];
 const allowedCities = ['montreal', 'laval', 'chicago'];
 const allowedRegions = ['north', 'south', 'east', 'west'];
 
-app.post('/search', authenticateToken, async (req, res, next) => {
+app.post('/api/search', authenticateToken, async (req, res, next) => {
   try {
     const {
       sport,
@@ -58,7 +58,7 @@ app.post('/search', authenticateToken, async (req, res, next) => {
     }
 
     if (sportType !== undefined) {
-      query.sportType = String(sportType).trim().toLowerCase();
+      query.sport_type = String(sportType).trim().toLowerCase();
     }
 
     if (sportLocation !== undefined) {
