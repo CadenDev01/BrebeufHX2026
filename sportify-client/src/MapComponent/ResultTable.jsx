@@ -1,8 +1,52 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { makeAuthenticatedRequest } from "../utils/api";
+import AttendeeModal from "../components/AttendeeModal";
 
-const ResultTable = ({ results, onViewOnMap }) => {
+const ResultTable = ({ results, onJoinSuccess, currentUserId, onViewOnMap }) => {
+  const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(1);
+  const [joiningId, setJoiningId] = useState(null);
+  const [joinMessages, setJoinMessages] = useState({});
+  const [joinedEvents, setJoinedEvents] = useState({});
+  const [showAttendeesFor, setShowAttendeesFor] = useState(null);
   const rowsPerPage = 10;
+
+  const handleJoinEvent = async (eventId) => {
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+
+    setJoiningId(eventId);
+    setJoinMessages(prev => ({ ...prev, [eventId]: '' }));
+
+    try {
+      const res = await makeAuthenticatedRequest('http://localhost:3000/api/addUserToEvent', {
+        method: 'POST',
+        body: JSON.stringify({ eventId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setJoinMessages(prev => ({
+          ...prev,
+          [eventId]: data.alreadyJoined ? 'Already joined!' : 'Joined!'
+        }));
+        setJoinedEvents(prev => ({ ...prev, [eventId]: true }));
+        if (!data.alreadyJoined && onJoinSuccess) {
+          onJoinSuccess(eventId, data.attendee);
+        }
+      } else {
+        setJoinMessages(prev => ({ ...prev, [eventId]: data.message || 'Failed' }));
+      }
+    } catch {
+      setJoinMessages(prev => ({ ...prev, [eventId]: 'Error' }));
+    } finally {
+      setJoiningId(null);
+    }
+  };
 
   if (!results || results.length === 0) {
     return <div className="text-center mt-8 text-gray-400">No results found.</div>;
@@ -14,34 +58,68 @@ const ResultTable = ({ results, onViewOnMap }) => {
   const visibleRows = results.slice(start, start + rowsPerPage);
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-8">
+    <div className="w-full max-w-4xl mx-auto mt-8">
       <table className="min-w-full bg-white rounded-lg shadow border border-gray-600">
         <thead>
           <tr>
-            <th className="px-6 py-3 border-b border-gray-300 text-black">City</th>
-            <th className="px-6 py-3 border-b border-gray-300 text-black">Venue/Location</th>
-            <th className="px-6 py-3 border-b border-gray-300 text-black">Activity</th>
-            <th className="px-6 py-3 border-b border-gray-300 text-black">Map</th>
+            <th className="px-4 py-3 border-b border-gray-300 text-black">City</th>
+            <th className="px-4 py-3 border-b border-gray-300 text-black">Venue/Location</th>
+            <th className="px-4 py-3 border-b border-gray-300 text-black">Activity</th>
+            <th className="px-4 py-3 border-b border-gray-300 text-black">Attendees</th>
+            <th className="px-4 py-3 border-b border-gray-300 text-black">Actions</th>
           </tr>
         </thead>
         <tbody>
           {visibleRows.map((row, idx) => {
+            const attendeeCount = row.attendees?.length || 0;
+            const alreadyJoined = joinedEvents[row._id] || (currentUserId && row.attendees?.some(a =>
+              a.odId === currentUserId || a.odId?.toString() === currentUserId?.toString()
+            ));
             return (
               <tr key={idx} className="text-black hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-3 border-b border-gray-300 text-black">{row.city || "-"}</td>
-                <td className="px-6 py-3 border-b border-gray-300 text-black">{row.sport_location || row.venue || "-"}</td>
-                <td className="px-6 py-3 border-b border-gray-300 text-black">{row.sport || "-"}</td>
-                <td className="px-6 py-3 border-b border-gray-300 text-center">
-                  {onViewOnMap ? (
+                <td className="px-4 py-3 border-b border-gray-300 text-black">{row.city || "-"}</td>
+                <td className="px-4 py-3 border-b border-gray-300 text-black">{row.sport_location || row.venue || "-"}</td>
+                <td className="px-4 py-3 border-b border-gray-300 text-black">{row.sport || "-"}</td>
+                <td className="px-4 py-3 border-b border-gray-300 text-black text-center">
+                  {attendeeCount > 0 ? (
                     <button
-                      onClick={() => onViewOnMap(row)}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm font-medium transition-colors"
-                      title="View on map"
+                      onClick={() => setShowAttendeesFor(row)}
+                      className="text-purple-600 hover:text-purple-800 underline"
                     >
-                      📍 View
+                      {attendeeCount}
                     </button>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    "0"
+                  )}
+                </td>
+                <td className="px-4 py-3 border-b border-gray-300 text-black">
+                  <div className="flex items-center gap-2 justify-center">
+                    {/* View on Map Button */}
+                    {onViewOnMap && (
+                      <button
+                        onClick={() => onViewOnMap(row)}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                        title="View on map"
+                      >
+                        📍
+                      </button>
+                    )}
+                    
+                    {/* Join Event Button */}
+                    <button
+                      onClick={() => handleJoinEvent(row._id)}
+                      disabled={joiningId === row._id || alreadyJoined}
+                      className={`px-3 py-1 text-xs text-white font-medium rounded transition-colors ${
+                        alreadyJoined
+                          ? 'bg-green-600 cursor-not-allowed'
+                          : 'bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300'
+                      }`}
+                    >
+                      {alreadyJoined ? 'Joined' : (joiningId === row._id ? '...' : 'Join')}
+                    </button>
+                  </div>
+                  {joinMessages[row._id] && !alreadyJoined && (
+                    <div className="text-xs text-green-600 text-center mt-1">{joinMessages[row._id]}</div>
                   )}
                 </td>
               </tr>
@@ -51,22 +129,30 @@ const ResultTable = ({ results, onViewOnMap }) => {
       </table>
 
       <div className="flex justify-center gap-4 mt-4">
-        <button 
-          disabled={pageSafe === 1} 
+        <button
+          disabled={pageSafe === 1}
           onClick={() => setPage(p => Math.max(p - 1, 1))}
           className="px-4 py-2 bg-purple-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           Prev
         </button>
         <span className="py-2 text-white">{pageSafe} / {totalPages}</span>
-        <button 
-          disabled={pageSafe === totalPages} 
+        <button
+          disabled={pageSafe === totalPages}
           onClick={() => setPage(p => Math.min(p + 1, totalPages))}
           className="px-4 py-2 bg-purple-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           Next
         </button>
       </div>
+
+      {showAttendeesFor && (
+        <AttendeeModal
+          eventId={showAttendeesFor._id}
+          eventName={showAttendeesFor.sport_location || showAttendeesFor.sport}
+          onClose={() => setShowAttendeesFor(null)}
+        />
+      )}
     </div>
   );
 };
