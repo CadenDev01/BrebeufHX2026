@@ -17,14 +17,14 @@ const Navbar = () => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
+            <Link to="/" className="text-gray-300 hover:text-white transition-colors font-medium">
+              Home
+            </Link>
             <Link to="/map" className="text-gray-300 hover:text-white transition-colors font-medium">
-              Find Games Near Me
+              Find Activities
             </Link>
-            <Link to="/venues" className="text-gray-300 hover:text-white transition-colors font-medium">
-              Venues
-            </Link>
-            <Link to="/community" className="text-gray-300 hover:text-white transition-colors font-medium">
-              Community
+            <Link to="/About" className="text-gray-300 hover:text-white transition-colors font-medium">
+              About Us
             </Link>
           </div>
 

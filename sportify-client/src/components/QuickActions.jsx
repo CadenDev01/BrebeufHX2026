@@ -1,8 +1,8 @@
 const QuickActions = () => {
   const actions = [
-    { label: 'Quick Match' },
-    { label: 'Nearby Courts' },
-    { label: 'Join Group' },
+    { label: 'Quick Suggestion' },
+    { label: 'Nearby Activities' },
+    { label: 'Join Groups' },
     { label: 'Schedule Game' },
   ];
 
