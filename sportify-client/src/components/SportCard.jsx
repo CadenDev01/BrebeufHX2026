@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+
 /**
  * @typedef {Object} SportCardProps
  * @property {string} sport - Name of the sport (e.g., "Basketball")
  * @property {number} players - Number of nearby players
  * @property {string} distance - Distance to the nearest game (e.g., "2 km")
  * @property {'easy' | 'medium' | 'hard'} difficulty - Difficulty level of the sport
+ * @property {boolean} isAuthenticated - Whether the user is logged in
  */
 
 /**
@@ -14,13 +17,25 @@ import { useState } from 'react';
  * @param {SportCardProps} props - Props for the SportCard component
  * @returns {JSX.Element} Rendered sport card
  */
-const SportCard = ({ sport, players, distance, difficulty }) => {
+const SportCard = ({ sport, players, distance, difficulty, isAuthenticated }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();  // Hook to navigate programmatically
 
   const difficultyColors = {
     easy: 'bg-green-500',
     medium: 'bg-yellow-500',
     hard: 'bg-red-500',
+  };
+
+  // Handle the button click to either navigate to login or continue
+  const handleButtonClick = () => {
+    if (!isAuthenticated) {
+      // Redirect the user to the login page if they are not authenticated
+      navigate('/login');
+    } else {
+      // Logic for when the user is authenticated
+      console.log(`Finding community for ${sport}`);
+    }
   };
 
   return (
@@ -51,8 +66,12 @@ const SportCard = ({ sport, players, distance, difficulty }) => {
           </div>
         </div>
 
-        <button className="w-full bg-purple-600 hover:bg-purple-700 rounded-lg py-2.5 px-4 font-medium text-sm transition-colors duration-200">
-          Find Community
+        <button
+          onClick={handleButtonClick}  // Handle the button click
+          className={`w-full ${isAuthenticated ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-400 cursor-not-allowed'} rounded-lg py-2.5 px-4 font-medium text-sm transition-colors duration-200`}
+          disabled={!isAuthenticated}  // Disable button if not authenticated
+        >
+          {isAuthenticated ? 'Find Community' : 'Log in to Join'}
         </button>
       </div>
     </div>
