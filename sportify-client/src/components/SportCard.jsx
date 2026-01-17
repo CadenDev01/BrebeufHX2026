@@ -1,5 +1,19 @@
 import { useState } from 'react';
+/**
+ * @typedef {Object} SportCardProps
+ * @property {string} sport - Name of the sport (e.g., "Basketball")
+ * @property {number} players - Number of nearby players
+ * @property {string} distance - Distance to the nearest game (e.g., "2 km")
+ * @property {'easy' | 'medium' | 'hard'} difficulty - Difficulty level of the sport
+ */
 
+/**
+ * Displays a card with sport information including difficulty,
+ * nearby players, and distance, with hover effects.
+ *
+ * @param {SportCardProps} props - Props for the SportCard component
+ * @returns {JSX.Element} Rendered sport card
+ */
 const SportCard = ({ sport, players, distance, difficulty }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -19,7 +33,6 @@ const SportCard = ({ sport, players, distance, difficulty }) => {
     >
       <div className="bg-slate-800 border border-slate-700 hover:border-slate-600 p-6 h-full min-h-[220px] transition-colors duration-200">
         <div className="flex items-start justify-between mb-4">
-          {/* TODO: Add your sport icon here (e.g., basketball, soccer ball image) */}
           <div className={`${difficultyColors[difficulty]} px-2.5 py-0.5 rounded text-xs font-semibold uppercase`}>
             {difficulty}
           </div>
@@ -29,12 +42,10 @@ const SportCard = ({ sport, players, distance, difficulty }) => {
 
         <div className="space-y-2.5 text-sm text-gray-400 mb-6">
           <div className="flex items-center gap-2">
-            {/* TODO: Add your players/users icon here (16x16px) */}
             <div className="w-4 h-4 bg-gray-600 rounded" />
             <span>{players} players nearby</span>
           </div>
           <div className="flex items-center gap-2">
-            {/* TODO: Add your location/pin icon here (16x16px) */}
             <div className="w-4 h-4 bg-gray-600 rounded" />
             <span>{distance} away</span>
           </div>

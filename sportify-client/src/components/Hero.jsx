@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom';
 
+/**
+ * Hero section component for Sportify.
+ * Displays the main headline, description, call-to-action buttons, and stats.
+ * Includes smooth scroll to the available sports section.
+ *
+ * @component
+ */
 const Hero = () => {
   // Smooth scroll handler
   const handleGetStarted = (e) => {

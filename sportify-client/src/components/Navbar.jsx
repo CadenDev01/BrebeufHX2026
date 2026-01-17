@@ -1,6 +1,17 @@
 import sportifyLogo from '../assets/sportify_logo.png'
 import { Link } from 'react-router-dom';
 
+/**
+ * Navbar component for Sportify.
+ * Displays the logo, navigation links, and call-to-action buttons.
+ * Uses React Router for navigation.
+ *
+ * @component
+ * @example
+ * return (
+ *   <Navbar />
+ * )
+ */
 const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-lg bg-slate-900/70 border-b border-white/10">

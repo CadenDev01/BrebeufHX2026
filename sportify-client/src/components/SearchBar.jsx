@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from "react";
 
+/**
+ * SearchBar component for Sportify.
+ * Provides a text input with optional autocomplete suggestions from an API endpoint.
+ * Can be used as a filter/search input with dropdown suggestions and error handling.
+ *
+ * @component
+ * @param {string} value - The current value of the input.
+ * @param {function} onChange - Handler to update the input value.
+ * @param {string} [placeholder="Search..."] - Placeholder text for the input.
+ * @param {boolean} [showButton=true] - Whether to show the search button.
+ * @param {string} [endpoint] - API endpoint for fetching suggestions.
+ * @example
+ * <SearchBar value={value} onChange={setValue} placeholder="Search for a venue..." endpoint="/api/venues?q=" />
+ */
 const SearchBar = ({
   value,
   onChange,
