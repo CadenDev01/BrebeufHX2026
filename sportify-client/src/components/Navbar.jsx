@@ -1,3 +1,5 @@
+import sportifyLogo from '../assets/sportify_logo.png'
+
 const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-lg bg-slate-900/70 border-b border-white/10">
@@ -5,7 +7,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="text-3xl">⚡</div>
+            <img src={sportifyLogo} alt="Sportify" className="h-10 w-10 object-contain" />
             <h1 className="text-2xl font-black">
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-green-400 text-transparent bg-clip-text">
                 Sportify

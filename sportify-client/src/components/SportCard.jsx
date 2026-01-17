@@ -1,16 +1,7 @@
 import { useState } from 'react';
 
-const SportCard = ({ sport, icon, color, players, distance, difficulty }) => {
+const SportCard = ({ sport, icon, players, distance, difficulty }) => {
   const [isHovered, setIsHovered] = useState(false);
-
-  const colorClasses = {
-    purple: 'from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800',
-    green: 'from-green-500 to-green-700 hover:from-green-600 hover:to-green-800',
-    orange: 'from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800',
-    blue: 'from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800',
-    red: 'from-red-500 to-red-700 hover:from-red-600 hover:to-red-800',
-    yellow: 'from-yellow-500 to-yellow-700 hover:from-yellow-600 hover:to-yellow-800',
-  };
 
   const difficultyColors = {
     easy: 'bg-green-500',
@@ -26,7 +17,7 @@ const SportCard = ({ sport, icon, color, players, distance, difficulty }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`bg-gradient-to-br ${colorClasses[color]} p-6 h-full min-h-[200px] relative`}>
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-purple-500/20 p-6 h-full min-h-[200px] relative hover:border-purple-500/40 transition-colors duration-300">
         {/* Animated background circles */}
         <div className={`absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transition-transform duration-500 ${isHovered ? 'scale-150' : 'scale-100'}`} />
         <div className={`absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-xl transition-transform duration-700 ${isHovered ? 'scale-125' : 'scale-100'}`} />

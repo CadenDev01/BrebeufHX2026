@@ -1,9 +1,9 @@
 const QuickActions = () => {
   const actions = [
-    { icon: '⚡', label: 'Quick Match', color: 'from-yellow-500 to-orange-500' },
-    { icon: '🗺️', label: 'Nearby Courts', color: 'from-blue-500 to-cyan-500' },
-    { icon: '👥', label: 'Join Group', color: 'from-purple-500 to-pink-500' },
-    { icon: '📅', label: 'Schedule Game', color: 'from-green-500 to-emerald-500' },
+    { icon: '⚡', label: 'Quick Match' },
+    { icon: '🗺️', label: 'Nearby Courts' },
+    { icon: '👥', label: 'Join Group' },
+    { icon: '📅', label: 'Schedule Game' },
   ];
 
   return (
@@ -13,7 +13,7 @@ const QuickActions = () => {
         {actions.map((action, index) => (
           <button
             key={index}
-            className={`bg-gradient-to-br ${action.color} p-6 rounded-2xl hover:scale-105 transition-transform duration-300 group`}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 border border-purple-500/20 p-6 rounded-2xl hover:scale-105 hover:border-purple-500/40 transition-all duration-300 group"
           >
             <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">
               {action.icon}

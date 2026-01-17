@@ -8,10 +8,11 @@ const Hero = () => {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto text-center">
-        <div className="mb-6 inline-block">
-          <span className="bg-gradient-to-r from-purple-400 to-green-400 text-transparent bg-clip-text text-6xl font-black">
-            🏀⚽🎾
-          </span>
+        {/* Decorative sport icons */}
+        <div className="mb-8 flex justify-center items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 animate-bounce" style={{ animationDelay: '0s', animationDuration: '2s' }} />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '2s' }} />
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 animate-bounce" style={{ animationDelay: '0.4s', animationDuration: '2s' }} />
         </div>
 
         <h1 className="text-6xl md:text-7xl font-black mb-6 leading-tight">
