@@ -3,6 +3,7 @@ import Hero from './components/Hero'
 import SportCard from './components/SportCard'
 import QuickActions from './components/QuickActions'
 import ChatBot from './components/ChatBot'
+import Footer from './components/Footer'
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Map from './MapComponent/Map';
 import SportList from './SportCardList/SportList';
@@ -67,6 +68,9 @@ function Home() {
 
       {/* AI ChatBot */}
       <ChatBot />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

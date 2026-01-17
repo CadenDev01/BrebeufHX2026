@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
 import AutocompleteSearchBar from './SearchBar';
@@ -268,6 +269,7 @@ const Map = () => {
           onViewOnMap={handleViewOnMap}
         />
       </div>
+      <Footer />
     </>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Footer from '../components/Footer';
 
 const SportsList = () => {
   const [sports, setSports] = useState([]);
@@ -54,6 +55,7 @@ const SportsList = () => {
           <li>No sports available</li>
         )}
       </ul>
+      <Footer />
     </div>
   );
 };
