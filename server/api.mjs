@@ -50,7 +50,7 @@ app.post('/api/search', async (req, res, next) => {
     }
 
     if (sportLocation !== undefined) {
-      query.sportLocation = String(sportLocation).trim().toLowerCase();
+      query.sport_location = String(sportLocation).trim().toLowerCase();
     }
 
     if (city !== undefined) {
