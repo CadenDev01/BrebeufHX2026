@@ -2,13 +2,19 @@ version: "3.9"
 
 services:
   backend:
-    build: ./backend
+    build: ./server
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./server/.env
 
   frontend:
-    build: ./frontend
+    build: ./sportify-client
     restart: unless-stopped
     ports:
       - "80:80"
+    depends_on:
+      - backend
