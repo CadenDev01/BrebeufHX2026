@@ -1,5 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import Navbar from '../components/Navbar';
+import LocationSearchBar from '../components/SearchBar';
 
 const position = [45.5019, -73.5674]; // Montreal
 
@@ -11,7 +12,11 @@ const Map = () => {
         <h2 className="text-5xl md:text-6xl font-bold mb-8 leading-tight text-center">
           Activity Map
         </h2>
-        <div className="w-full max-w-3xl flex justify-center">
+       
+        <div className="w-full max-w-3xl flex flex-col items-center gap-4">
+          <div className="w-full flex justify-center">
+             <LocationSearchBar />
+          </div>
           <MapContainer
             center={position}
             zoom={12}
