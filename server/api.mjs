@@ -3,6 +3,7 @@ import path from 'path';
 import compression from 'compression';
 import cors from 'cors';
 import {db} from './db/DB.mjs';
+import { ObjectId } from 'mongodb';
 import process from 'node:process';
 import authRoutes from './routes/auth.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
@@ -148,24 +149,115 @@ app.post('/userEvents', authenticateToken, async (req, res, next) => {
 });
 
 app.post('/addUserToEvent', authenticateToken, async (req, res) => {
-  const { userName, eventId } = req.body;
+  const { eventId } = req.body;
+  const userId = req.user.id; // Get user ID from authenticated token
 
-  if (!userName || !eventId) {
-    return res.status(400).json({ message: "userName and eventId are required" });
+  if (!eventId) {
+    return res.status(400).json({ message: "eventId is required" });
   }
 
   try {
-    // Find the event by id
-    const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    await db.setCollection('ProjectCollection');
 
-    if (!event.users.includes(userName)) {
-      event.users.push(userName);
-      await event.save(); // test that it works
-      return res.status(200).json({ message: `${userName} added to the event`, event });
-    } else {
-      return res.status(200).json({ message: `${userName} is already in the event`, event });
+    // Convert eventId to ObjectId
+    let eventObjectId;
+    try {
+      eventObjectId = new ObjectId(eventId);
+    } catch {
+      return res.status(400).json({ message: "Invalid eventId format" });
     }
+
+    // Find the event
+    const event = await db.collection.findOne({ _id: eventObjectId });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Check if user is already an attendee
+    const attendees = event.attendees || [];
+    if (attendees.includes(userId)) {
+      return res.status(200).json({ message: "You are already attending this event", event });
+    }
+
+    // Add user to attendees array
+    const result = await db.collection.updateOne(
+      { _id: eventObjectId },
+      { $addToSet: { attendees: userId } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(500).json({ message: "Failed to add user to event" });
+    }
+
+    const updatedEvent = await db.collection.findOne({ _id: eventObjectId });
+    return res.status(200).json({ message: "Successfully added to event", event: updatedEvent });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post('/removeUserFromEvent', authenticateToken, async (req, res) => {
+  const { eventId } = req.body;
+  const userId = req.user.id;
+
+  if (!eventId) {
+    return res.status(400).json({ message: "eventId is required" });
+  }
+
+  try {
+    await db.setCollection('ProjectCollection');
+
+    let eventObjectId;
+    try {
+      eventObjectId = new ObjectId(eventId);
+    } catch {
+      return res.status(400).json({ message: "Invalid eventId format" });
+    }
+
+    const event = await db.collection.findOne({ _id: eventObjectId });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const result = await db.collection.updateOne(
+      { _id: eventObjectId },
+      { $pull: { attendees: userId } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(200).json({ message: "You were not attending this event" });
+    }
+
+    const updatedEvent = await db.collection.findOne({ _id: eventObjectId });
+    return res.status(200).json({ message: "Successfully removed from event", event: updatedEvent });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get('/eventAttendees/:eventId', authenticateToken, async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    await db.setCollection('ProjectCollection');
+
+    let eventObjectId;
+    try {
+      eventObjectId = new ObjectId(eventId);
+    } catch {
+      return res.status(400).json({ message: "Invalid eventId format" });
+    }
+
+    const event = await db.collection.findOne({ _id: eventObjectId });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    return res.status(200).json({ attendees: event.attendees || [] });
 
   } catch (err) {
     console.error(err);
