@@ -42,6 +42,8 @@ const allowedRegions = ['north', 'south', 'east', 'west'];
 
 app.post('/api/search', authenticateToken, async (req, res, next) => {
   try {
+    await db.setCollection('sports');
+
     const {
       sport,
       sportType,
@@ -94,6 +96,8 @@ app.post('/api/search', authenticateToken, async (req, res, next) => {
 
 app.get('/api/sports', async (req, res, next) => {
   try {
+    await db.setCollection('sports');
+
     const sports = await db.collection.aggregate([
       { $group: { _id: "$sport" } } // Group by sport to get unique values
     ]).toArray();
