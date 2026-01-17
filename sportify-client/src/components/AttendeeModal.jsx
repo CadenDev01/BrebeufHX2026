@@ -10,7 +10,7 @@ const AttendeeModal = ({ eventId, eventName, onClose }) => {
     const fetchAttendees = async () => {
       try {
         const res = await makeAuthenticatedRequest(
-          `http://localhost:3000/api/event/${eventId}/attendees`
+          `/api/event/${eventId}/attendees`
         );
 
         if (res.ok) {

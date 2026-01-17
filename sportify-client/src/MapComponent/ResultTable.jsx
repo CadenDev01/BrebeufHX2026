@@ -22,7 +22,7 @@ const ResultTable = ({ results, onJoinSuccess, currentUserId, onViewOnMap }) => 
     setJoinMessages(prev => ({ ...prev, [eventId]: '' }));
 
     try {
-      const res = await makeAuthenticatedRequest('http://localhost:3000/api/addUserToEvent', {
+      const res = await makeAuthenticatedRequest('/api/addUserToEvent', {
         method: 'POST',
         body: JSON.stringify({ eventId }),
       });

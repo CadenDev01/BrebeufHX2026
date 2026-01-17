@@ -127,7 +127,7 @@ const Map = () => {
     if (location) body.city = location.toLowerCase();
 
     try {
-      const res = await fetch("http://localhost:3000/api/search", {
+      const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
