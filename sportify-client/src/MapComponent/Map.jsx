@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import Navbar from '../components/Navbar';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
+import AutocompleteSearchBar from '../components/SearchBar';
 import { makeAuthenticatedRequest } from '../utils/api';
 
 const defaultPosition = [45.5019, -73.5674]; // Montreal
@@ -11,7 +12,7 @@ const defaultPosition = [45.5019, -73.5674]; // Montreal
 const RecenterMap = ({ position }) => {
   const map = useMap();
   useEffect(() => {
-    if (position) map.setView(position, 12); // zoom 12 or keep previous zoom
+    if (position) map.setView(position, 12);
   }, [position, map]);
   return null;
 };
@@ -23,7 +24,21 @@ const Map = () => {
   const [filteredResults, setFilteredResults] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultPosition);
   const [loading, setLoading] = useState(false);
-  console.log({filteredResults} );
+
+  // Check URL parameters on mount (for "View All" or sport-specific links)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fetchAll = params.get('fetchAll') === 'true';
+    const sportParam = params.get('sport');
+    
+    if (fetchAll) {
+      handleSearch();
+    } else if (sportParam) {
+      setActivity(sportParam);
+      // Optionally auto-search when coming from sport list
+      // setTimeout(() => handleSearch(), 100);
+    }
+  }, []);
 
   const handleSearch = async () => {
     setLoading(true);
@@ -55,15 +70,17 @@ const Map = () => {
       const data = await res.json();
       console.log('Search results:', data);
 
+      // Filter for valid coordinates
       const withCoords = data.filter(item => {
         const lat = Number(item.latitude);
         const lng = Number(item.longitude);
         return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
       });
-      console.log('Results with coords:', withCoords.map(i => ({ lat: i.latitude, lng: i.longitude, sport: i.sport })));
 
+      console.log('Results with coords:', withCoords.length);
       setFilteredResults(withCoords);
 
+      // Center map on first result
       if (withCoords.length > 0) {
         setMapCenter([
           Number(withCoords[0].latitude),
@@ -74,14 +91,12 @@ const Map = () => {
       }
 
     } catch (err) {
-      console.error(err);
+      console.error('Search error:', err);
       alert("Failed to fetch results");
     } finally {
       setLoading(false);
     }
   };
-
-
 
   return (
     <>
@@ -91,39 +106,40 @@ const Map = () => {
           Activity Map
         </h2>
 
-        <div className="w-full max-w-3xl flex gap-4 mb-8">
-          <input
-            type="text"
+        {/* Three Separate Search Bars with Autocomplete */}
+        <div className="w-full max-w-3xl flex gap-4 mb-8 relative z-[10000]">
+          <AutocompleteSearchBar
             value={activity}
-            onChange={(e) => setActivity(e.target.value)}
+            onChange={setActivity}
             placeholder="Search for an activity..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            searchField="sport"
           />
-          <input
-            type="text"
+          <AutocompleteSearchBar
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={setLocation}
             placeholder="Search for a city..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            searchField="city"
           />
-          <input
-            type="text"
+          <AutocompleteSearchBar
             value={venue}
-            onChange={(e) => setVenue(e.target.value)}
+            onChange={setVenue}
             placeholder="Search for a venue..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            searchField="sportLocation"
           />
           <button
             onClick={handleSearch}
             disabled={loading}
-            className={`px-6 py-2 rounded-lg font-semibold transition
-              ${loading ? "bg-purple-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 text-white"}
-            `}
+            className={`px-6 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
+              loading 
+                ? "bg-purple-300 cursor-not-allowed text-white" 
+                : "bg-purple-600 hover:bg-purple-700 text-white"
+            }`}
           >
             {loading ? "Searching..." : "Search"}
           </button>
         </div>
 
+        {/* Map Container */}
         <div className="w-full max-w-3xl">
           <MapContainer
             center={mapCenter}
@@ -137,22 +153,24 @@ const Map = () => {
             />
             <RecenterMap position={mapCenter} />
 
+            {/* Loading Overlay */}
             {loading && (
-                <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-white/70">
-                  <span className="text-purple-600 font-semibold">Loading map data…</span>
-                </div>
-              )}
+              <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-white/70">
+                <span className="text-purple-600 font-semibold">Loading map data…</span>
+              </div>
+            )}
 
-              {!loading && filteredResults.map((mapItem, idx) => (
-                <Marker key={idx} position={[mapItem.latitude, mapItem.longitude]}>
-                  <MapPopup item={mapItem} />
-                </Marker>
-              ))}
+            {/* Markers */}
+            {!loading && filteredResults.map((mapItem, idx) => (
+              <Marker key={idx} position={[mapItem.latitude, mapItem.longitude]}>
+                <MapPopup item={mapItem} />
+              </Marker>
+            ))}
           </MapContainer>
         </div>
-        <ResultTable 
-          results={filteredResults} 
-        />
+
+        {/* Results Table */}
+        <ResultTable results={filteredResults} />
       </div>
     </>
   );

@@ -1,138 +1,141 @@
-// import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from 'react';
+import { makeAuthenticatedRequest } from '../utils/api';
 
-// /**
-//  * SearchBar component for Sportify.
-//  * Provides a text input with optional autocomplete suggestions from an API endpoint.
-//  * Can be used as a filter/search input with dropdown suggestions and error handling.
-//  *
-//  * @component
-//  * @param {string} value - The current value of the input.
-//  * @param {function} onChange - Handler to update the input value.
-//  * @param {string} [placeholder="Search..."] - Placeholder text for the input.
-//  * @param {boolean} [showButton=true] - Whether to show the search button.
-//  * @param {string} [endpoint] - API endpoint for fetching suggestions.
-//  * @example
-//  * <SearchBar value={value} onChange={setValue} placeholder="Search for a venue..." endpoint="/api/venues?q=" />
-//  */
-// const SearchBar = ({
-//   value,
-//   onChange,
-//   placeholder = "Search...",
-//   showButton = true,
-//   // searchFields = ["city"],
-//   // getBody = (value) => ({ city: value.toLowerCase(), limit: 20 }),
-// }) => {
-//   // const [suggestions, setSuggestions] = useState([]);
-//   // const [showDropdown, setShowDropdown] = useState(false);
-//   // const [loading, setLoading] = useState(false);
-//   // const [error, setError] = useState(null);
+const AutocompleteSearchBar = ({ 
+  value, 
+  onChange, 
+  placeholder, 
+  searchField // 'sport', 'city', or 'sportLocation'
+}) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const dropdownRef = useRef(null);
 
-  
-//   // useEffect(() => {
-//   //   if (!value || value.trim().length === 0) {
-//   //     setSuggestions([]);
-//   //     setError(null);
-//   //     return;
-//   //   }
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
 
-//   //   const controller = new AbortController();
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-//   //   const fetchSuggestions = async () => {
-//   //     try {
-//   //       setLoading(true);
-//   //       setError(null);
+  // Fetch suggestions as user types
+  useEffect(() => {
+    if (!value || value.trim().length === 0) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
 
-//   //       const res = await fetch("/search", {
-//   //         method: "POST",
-//   //         headers: {
-//   //           "Content-Type": "application/json",
-//   //         },
-//   //         signal: controller.signal,
-//   //         body: JSON.stringify(getBody(value)),
-//   //       });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      try {
+        setIsSearching(true);
+        
+        // Fetch all data
+        const res = await makeAuthenticatedRequest("http://localhost:3000/api/search", {
+          method: "POST",
+          body: JSON.stringify({}),
+          signal: controller.signal,
+        });
 
-//   //       if (!res.ok) throw new Error("Fetch failed");
+        if (!res.ok) throw new Error("Search failed");
 
-//   //       const data = await res.json();
+        const data = await res.json();
+        
+        // Filter based on the specific field and query
+        const queryLower = value.toLowerCase();
+        const matches = new Set();
 
-//   //       // 🔍 Match ANY field
-//   //       const filtered = Array.isArray(data)
-//   //         ? data.filter((item) =>
-//   //             searchFields.some((field) => {
-//   //               const fieldValue = item?.[field];
-//   //               return (
-//   //                 typeof fieldValue === "string" &&
-//   //                 fieldValue.toLowerCase().includes(value.toLowerCase())
-//   //               );
-//   //             })
-//   //           )
-//   //         : [];
+        data.forEach(item => {
+          let fieldValue = '';
+          
+          if (searchField === 'sport') {
+            fieldValue = item.sport;
+          } else if (searchField === 'city') {
+            fieldValue = item.city;
+          } else if (searchField === 'sportLocation') {
+            fieldValue = item.sport_location || item.sportLocation || item.venue;
+          }
 
-//   //       setSuggestions(filtered);
-//   //     } catch (err) {
-//   //       if (err.name !== "AbortError") {
-//   //         setError("Failed to fetch suggestions");
-//   //         setSuggestions([]);
-//   //       }
-//   //     } finally {
-//   //       setLoading(false);
-//   //     }
-//   //   };
+          // Check if field value contains the query
+          if (fieldValue && fieldValue.toLowerCase().includes(queryLower)) {
+            matches.add(fieldValue);
+          }
+        });
 
-//   //   fetchSuggestions();
-//   //   return () => controller.abort();
-//   // }, [value, getBody, searchFields]);
+        // Convert Set to array and sort
+        const uniqueSuggestions = Array.from(matches)
+          .sort()
+          .slice(0, 10); // Limit to 10 suggestions
 
-//   const handleChange = (e) => {
-//     onChange(e.target.value);
-//     setShowDropdown(true);
-//   };
+        setSuggestions(uniqueSuggestions);
+        setShowDropdown(uniqueSuggestions.length > 0);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Search error:', err);
+        }
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300); // Debounce for 300ms
 
-//   const handleSelect = (item) => {
-//     onChange(item.name || item);
-//     setShowDropdown(false);
-//   };
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [value, searchField]);
 
-//   return (
-//     <div className="w-full max-w-xs relative">
-//       <input
-//         type="text"
-//         className="w-full px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none"
-//         placeholder={placeholder}
-//         value={value}
-//         onChange={handleChange}
-//         onFocus={() => setShowDropdown(true)}
-//         autoComplete="off"
-//       />
-//       {showButton && (
-//         <button
-//           type="submit"
-//           className="px-4 py-2 bg-purple-600 text-white rounded-r-lg hover:bg-purple-700 transition absolute right-0 top-0 h-full"
-//         >
-//           Search
-//         </button>
-//       )}
-//       {showDropdown && (suggestions.length > 0 || loading || error) && (
-//         <ul className="absolute left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow z-10 max-h-60 overflow-y-auto">
-//           {loading && (
-//             <li className="px-4 py-2 text-gray-400">Loading...</li>
-//           )}
-//           {error && (
-//             <li className="px-4 py-2 text-red-500">{error}</li>
-//           )}
-//           {suggestions.map((item, idx) => (
-//             <li
-//               key={idx}
-//               className="px-4 py-2 cursor-pointer hover:bg-purple-100"
-//               onMouseDown={() => handleSelect(item.name || item)}
-//             >
-//               {item.name || item}
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-//     </div>
-//   );
-// };
+  const handleSelect = (suggestion) => {
+    onChange(suggestion);
+    setShowDropdown(false);
+  };
 
-// export default SearchBar;
+  const handleInputChange = (e) => {
+    onChange(e.target.value);
+    setShowDropdown(true);
+  };
+
+  return (
+    <div className="flex-1 relative" ref={dropdownRef}>
+      <input
+        type="text"
+        value={value}
+        onChange={handleInputChange}
+        onFocus={() => value && suggestions.length > 0 && setShowDropdown(true)}
+        placeholder={placeholder}
+        className="w-full px-4 py-2 text-white bg-slate-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400"
+        autoComplete="off"
+      />
+      
+      {/* Loading indicator */}
+      {isSearching && (
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+        </div>
+      )}
+
+      {/* Dropdown Suggestions */}
+      {showDropdown && suggestions.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto z-[9999]">
+          {suggestions.map((suggestion, idx) => (
+            <li
+              key={idx}
+              onClick={() => handleSelect(suggestion)}
+              className="px-4 py-2 hover:bg-purple-100 cursor-pointer text-black border-b border-gray-100 last:border-b-0 transition-colors"
+            >
+              {suggestion}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default AutocompleteSearchBar;
