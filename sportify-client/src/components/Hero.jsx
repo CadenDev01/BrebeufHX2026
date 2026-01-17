@@ -1,6 +1,15 @@
 import { Link } from 'react-router-dom';
 
 const Hero = () => {
+  // Smooth scroll handler
+  const handleGetStarted = (e) => {
+    e.preventDefault();
+    const section = document.getElementById("available-sports");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="relative overflow-hidden py-16 px-4">
       <div className="relative z-10 max-w-5xl mx-auto">
@@ -15,12 +24,16 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <button className="px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-base transition-colors duration-200">
+            <a
+              href="#available-sports"
+              onClick={handleGetStarted}
+              className="px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-base transition-colors duration-200 cursor-pointer"
+            >
               Get Started
-            </button>
-            <button className="px-8 py-3 bg-transparent border border-gray-600 hover:border-gray-500 rounded-lg font-semibold text-base transition-colors duration-200">
+            </a>
+            <Link to='/about' className="px-8 py-3 bg-transparent border border-gray-600 hover:border-gray-500 rounded-lg font-semibold text-base transition-colors duration-200">
               Learn More
-            </button>
+            </Link>
           </div>
         </div>
 

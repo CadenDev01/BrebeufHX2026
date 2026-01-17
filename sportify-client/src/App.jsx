@@ -31,7 +31,7 @@ function Home() {
       {/* Sports Grid */}
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">Available Sports</h2>
+          <h2 id="available-sports" className="text-2xl font-bold">Available Sports</h2>
           <button className="text-purple-400 hover:text-purple-300 font-medium text-sm">
             View All
           </button>
