@@ -277,7 +277,7 @@ app.use((err, req, res, next) => {
 
 if(db.db){ 
   // bind it to as server to be able to use the .close() function
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT,"0.0.0.0", () => {
     console.log(`Example app app listening at http://localhost:${PORT}`);
   });
   // in case it's a linux/unix/mac
