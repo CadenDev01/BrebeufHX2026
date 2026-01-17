@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-lg bg-slate-900/70 border-b border-white/10">
@@ -15,15 +17,15 @@ const Navbar = () => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-medium">
-              Find Games
-            </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-medium">
+            <Link to="/map" className="text-gray-300 hover:text-white transition-colors font-medium">
+              Find Games Near Me
+            </Link>
+            <Link to="/venues" className="text-gray-300 hover:text-white transition-colors font-medium">
               Venues
-            </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-medium">
+            </Link>
+            <Link to="/community" className="text-gray-300 hover:text-white transition-colors font-medium">
               Community
-            </a>
+            </Link>
           </div>
 
           {/* CTA Buttons */}

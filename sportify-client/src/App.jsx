@@ -1,9 +1,11 @@
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import SportCard from './components/SportCard'
-import QuickActions from './components/QuickActions'
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import SportCard from './components/SportCard';
+import QuickActions from './components/QuickActions';
+import { Routes, Route } from 'react-router-dom';
+import Map from './MapComponent/Map';
 
-function App() {
+function Home() {
   const sports = [
     { sport: 'Basketball', icon: '🏀', color: 'orange', players: 12, distance: '0.5 km', difficulty: 'medium' },
     { sport: 'Soccer', icon: '⚽', color: 'green', players: 18, distance: '1.2 km', difficulty: 'easy' },
@@ -58,4 +60,12 @@ function App() {
   );
 }
 
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/map" element={<Map />} />
+    </Routes>
+  );
+}
 export default App;
