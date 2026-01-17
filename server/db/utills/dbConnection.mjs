@@ -1,5 +1,5 @@
 import process from 'node:process';
-import { db } from '../db/db.mjs';
+import { db } from '../db.mjs';
 
 try {
   process.loadEnvFile();
