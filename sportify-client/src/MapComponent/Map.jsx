@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import Navbar from '../components/Navbar';
 import ResultTable from "./ResultTable";
 import MapPopup from "./MapPopup";
+import { useAuth } from '../context/AuthContext';
 
 const defaultPosition = [45.5019, -73.5674]; // Montreal
 
@@ -16,13 +17,24 @@ const RecenterMap = ({ position }) => {
 };
 
 const Map = () => {
+  const { user } = useAuth();
   const [activity, setActivity] = useState('');
   const [location, setLocation] = useState('');
   const [venue, setVenue] = useState('');
   const [filteredResults, setFilteredResults] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultPosition);
   const [loading, setLoading] = useState(false);
+
+  const currentUserId = user?._id || null;
   console.log({filteredResults} );
+
+  const handleJoinSuccess = (eventId, attendee) => {
+    setFilteredResults(prev => prev.map(r => 
+      r._id === eventId 
+        ? { ...r, attendees: [...(r.attendees || []), attendee] }
+        : r
+    ));
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -145,13 +157,19 @@ const Map = () => {
 
               {!loading && filteredResults.map((mapItem, idx) => (
                 <Marker key={idx} position={[mapItem.latitude, mapItem.longitude]}>
-                  <MapPopup item={mapItem} />
+                  <MapPopup 
+                    item={mapItem} 
+                    currentUserId={currentUserId} 
+                    onJoinSuccess={handleJoinSuccess} 
+                  />
                 </Marker>
               ))}
           </MapContainer>
         </div>
-        <ResultTable 
-          results={filteredResults} 
+        <ResultTable
+          results={filteredResults}
+          currentUserId={currentUserId}
+          onJoinSuccess={handleJoinSuccess}
         />
       </div>
     </>

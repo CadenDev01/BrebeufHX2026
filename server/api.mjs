@@ -3,6 +3,7 @@ import path from 'path';
 import compression from 'compression';
 import cors from 'cors';
 import {db} from './db/DB.mjs';
+import { ObjectId } from 'mongodb';
 import process from 'node:process';
 import authRoutes from './routes/auth.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
@@ -111,30 +112,21 @@ app.get('/api/sports', async (req, res, next) => {
   }
 });
 
-app.post('/userEvents', authenticateToken, async (req, res, next) => {
+app.get('/api/userEvents', authenticateToken, async (req, res, next) => {
   try {
-    const { username, limit } = req.body;
+    await db.setCollection('sports');
 
-    // Validate username
-    if (!username || !username.toString().trim()) {
-      return res.status(400).json({
-        error: '"username" must be provided and non-empty'
-      });
+    const user = req.user;
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+
+    // Find events where user is in attendees array
+    let cursor = db.collection.find({ 'attendees.odId': new ObjectId(user.id) });
+
+    if (limit !== null && limit > 0) {
+      cursor = cursor.limit(limit);
     }
 
-    // Build the query
-    let query = db.find({ users: username });
-
-    // Apply limit only if provided
-    if (limit !== undefined) {
-      const parsedLimit = parseInt(limit, 10);
-      if (isNaN(parsedLimit) || parsedLimit <= 0) {
-        return res.status(400).json({ error: '"limit" must be a positive number' });
-      }
-      query = query.limit(parsedLimit);
-    }
-
-    const results = await query;
+    const results = await cursor.toArray();
 
     res.status(200).json(results);
   } catch (err) {
@@ -142,25 +134,92 @@ app.post('/userEvents', authenticateToken, async (req, res, next) => {
   }
 });
 
-app.post('/addUserToEvent', authenticateToken, async (req, res) => {
-  const { userName, eventId } = req.body;
+app.post('/api/addUserToEvent', authenticateToken, async (req, res) => {
+  const { eventId } = req.body;
 
-  if (!userName || !eventId) {
-    return res.status(400).json({ message: "userName and eventId are required" });
+  if (!eventId) {
+    return res.status(400).json({ message: "eventId is required" });
   }
 
   try {
-    // Find the event by id
-    const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    await db.setCollection('sports');
 
-    if (!event.users.includes(userName)) {
-      event.users.push(userName);
-      await event.save(); // test that it works
-      return res.status(200).json({ message: `${userName} added to the event`, event });
-    } else {
-      return res.status(200).json({ message: `${userName} is already in the event`, event });
+    // Get user info from the authenticated token
+    const user = req.user;
+
+    // Find the event by id
+    let objectId;
+    try {
+      objectId = new ObjectId(eventId);
+    } catch {
+      return res.status(400).json({ message: "Invalid eventId format" });
     }
+
+    const event = await db.collection.findOne({ _id: objectId });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Check if user already joined
+    const attendees = event.attendees || [];
+    const alreadyJoined = attendees.some(a => a.odId?.toString() === user.id?.toString());
+
+    if (alreadyJoined) {
+      return res.status(200).json({ message: "You have already joined this event", alreadyJoined: true });
+    }
+
+    // Add user to attendees
+    const attendeeData = {
+      odId: new ObjectId(user.id),
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      joinedAt: new Date()
+    };
+
+    await db.collection.updateOne(
+      { _id: objectId },
+      { $push: { attendees: attendeeData } }
+    );
+
+    return res.status(200).json({
+      message: "Successfully joined the event",
+      attendee: attendeeData
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get('/api/event/:id/attendees', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.setCollection('sports');
+
+    let objectId;
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      return res.status(400).json({ message: "Invalid event ID format" });
+    }
+
+    const event = await db.collection.findOne({ _id: objectId });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Return attendees with only name (privacy: no email)
+    const attendees = (event.attendees || []).map(a => ({
+      odId: a.odId,
+      firstName: a.firstName,
+      lastName: a.lastName,
+      joinedAt: a.joinedAt
+    }));
+
+    return res.status(200).json({ attendees, count: attendees.length });
 
   } catch (err) {
     console.error(err);
