@@ -1,24 +1,40 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import Navbar from '../components/Navbar';
-import ResultsTable from "./ResultTable";
+import ResultTable from "./ResultTable";
+import MapPopup from "./MapPopup";
 
-const position = [45.5019, -73.5674]; // Montreal
+const defaultPosition = [45.5019, -73.5674]; // Montreal
+
+// Component to dynamically recenter the map
+const RecenterMap = ({ position }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (position) map.setView(position, 12); // zoom 12 or keep previous zoom
+  }, [position, map]);
+  return null;
+};
 
 const Map = () => {
   const [activity, setActivity] = useState('');
   const [location, setLocation] = useState('');
   const [venue, setVenue] = useState('');
   const [filteredResults, setFilteredResults] = useState([]);
+  const [mapCenter, setMapCenter] = useState(defaultPosition);
+  const [loading, setLoading] = useState(false);
+  console.log({filteredResults} );
 
   const handleSearch = async () => {
+    setLoading(true);
+
     const isValid = (str) =>
       typeof str === "string" &&
       str.length <= 100 &&
-      /^[\w\s\-.,']*$/i.test(str);
+      /^[\p{L}\d\s\-.,']*$/u.test(str);
 
     if (![activity, location, venue].every(isValid)) {
       alert("Invalid input detected.");
+      setLoading(false);
       return;
     }
 
@@ -37,12 +53,34 @@ const Map = () => {
       if (!res.ok) throw new Error("Search failed");
 
       const data = await res.json();
-      setFilteredResults(data);
+
+      const withCoords = data.filter(item =>
+        item.latitude !== "" &&
+        item.longitude !== "" &&
+        item.latitude !== null &&
+        item.longitude !== null
+      );
+
+      setFilteredResults(withCoords);
+
+      if (withCoords.length > 0) {
+        setMapCenter([
+          Number(withCoords[0].latitude),
+          Number(withCoords[0].longitude)
+        ]);
+      } else {
+        setMapCenter(defaultPosition);
+      }
+
     } catch (err) {
       console.error(err);
       alert("Failed to fetch results");
+    } finally {
+      setLoading(false);
     }
   };
+
+
 
   return (
     <>
@@ -60,7 +98,6 @@ const Map = () => {
             placeholder="Search for an activity..."
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-
           <input
             type="text"
             value={location}
@@ -68,7 +105,6 @@ const Map = () => {
             placeholder="Search for a city..."
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-
           <input
             type="text"
             value={venue}
@@ -76,40 +112,46 @@ const Map = () => {
             placeholder="Search for a venue..."
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-
           <button
             onClick={handleSearch}
-            className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition"
+            disabled={loading}
+            className={`px-6 py-2 rounded-lg font-semibold transition
+              ${loading ? "bg-purple-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 text-white"}
+            `}
           >
-            Search
+            {loading ? "Searching..." : "Search"}
           </button>
         </div>
 
         <div className="w-full max-w-3xl">
           <MapContainer
-            center={position}
+            center={mapCenter}
             zoom={12}
             style={{ height: "500px", width: "100%" }}
-            className="rounded-lg shadow-lg"
+            className="rounded-lg shadow-lg relative"
           >
             <TileLayer
               attribution='&copy; OpenStreetMap contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            <RecenterMap position={mapCenter} />
 
-            {filteredResults.map((item, idx) => (
-              <Marker key={idx} position={[item.latitude, item.longitude]}>
-                <Popup>
-                  <strong>{item.sport}</strong><br />
-                  {item.venue}<br />
-                  {item.city}
-                </Popup>
-              </Marker>
-            ))}
+            {loading && (
+                <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-white/70">
+                  <span className="text-purple-600 font-semibold">Loading map data…</span>
+                </div>
+              )}
+
+              {!loading && filteredResults.map((mapItem, idx) => (
+                <Marker key={idx} position={[mapItem.latitude, mapItem.longitude]}>
+                  <MapPopup item={mapItem} />
+                </Marker>
+              ))}
           </MapContainer>
         </div>
-
-        <ResultsTable results={filteredResults} />
+        <ResultTable 
+          results={filteredResults} 
+        />
       </div>
     </>
   );
