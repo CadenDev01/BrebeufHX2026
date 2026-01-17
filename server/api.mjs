@@ -1,19 +1,32 @@
 import express from 'express';
 import path from 'path';
 import compression from 'compression';
+import cors from 'cors';
 import {db} from './db/DB.mjs';
-import process from 'node:process'; 
+import process from 'node:process';
+import authRoutes from './routes/auth.mjs';
+import { authenticateToken } from './middleware/auth.mjs';
+
 if(db.db === null) await db.connect();
 await db.setCollection('ProjectCollecion');
 const PORT = process.env.PORT || 3000;
-  
+
 const app = express();
+
+// Enable CORS for development
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.json({ limit: '10kb' }));
 
 app.use(compression());
 
 app.use(express.static('./client/dist/'));
+
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve('./client/dist/index.html'));
@@ -27,8 +40,7 @@ const allowedSportTypes = ['indoor', 'outdoor'];
 const allowedCities = ['montreal', 'laval', 'chicago'];
 const allowedRegions = ['north', 'south', 'east', 'west'];
 
-app.post('/api/search', async (req, res, next) => {
-  console.log('Received search request body:', req.body);
+app.post('/search', authenticateToken, async (req, res, next) => {
   try {
     const {
       sport,
@@ -95,9 +107,7 @@ app.get('/api/sports', async (req, res, next) => {
   }
 });
 
-
-
-app.post('/userEvents', async (req, res, next) => {
+app.post('/userEvents', authenticateToken, async (req, res, next) => {
   try {
     const { username, limit } = req.body;
 
@@ -128,7 +138,7 @@ app.post('/userEvents', async (req, res, next) => {
   }
 });
 
-app.post('/addUserToEvent', async (req, res) => {
+app.post('/addUserToEvent', authenticateToken, async (req, res) => {
   const { userName, eventId } = req.body;
 
   if (!userName || !eventId) {
