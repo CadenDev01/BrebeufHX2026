@@ -112,30 +112,21 @@ app.get('/api/sports', async (req, res, next) => {
   }
 });
 
-app.post('/userEvents', authenticateToken, async (req, res, next) => {
+app.get('/api/userEvents', authenticateToken, async (req, res, next) => {
   try {
-    const { username, limit } = req.body;
+    await db.setCollection('sports');
 
-    // Validate username
-    if (!username || !username.toString().trim()) {
-      return res.status(400).json({
-        error: '"username" must be provided and non-empty'
-      });
+    const user = req.user;
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+
+    // Find events where user is in attendees array
+    let cursor = db.collection.find({ 'attendees.odId': new ObjectId(user.id) });
+
+    if (limit !== null && limit > 0) {
+      cursor = cursor.limit(limit);
     }
 
-    // Build the query
-    let query = db.find({ users: username });
-
-    // Apply limit only if provided
-    if (limit !== undefined) {
-      const parsedLimit = parseInt(limit, 10);
-      if (isNaN(parsedLimit) || parsedLimit <= 0) {
-        return res.status(400).json({ error: '"limit" must be a positive number' });
-      }
-      query = query.limit(parsedLimit);
-    }
-
-    const results = await query;
+    const results = await cursor.toArray();
 
     res.status(200).json(results);
   } catch (err) {
@@ -143,49 +134,58 @@ app.post('/userEvents', authenticateToken, async (req, res, next) => {
   }
 });
 
-app.post('/addUserToEvent', authenticateToken, async (req, res) => {
+app.post('/api/addUserToEvent', authenticateToken, async (req, res) => {
   const { eventId } = req.body;
-  const userId = req.user.id; // Get user ID from authenticated token
 
   if (!eventId) {
     return res.status(400).json({ message: "eventId is required" });
   }
 
   try {
-    await db.setCollection('ProjectCollection');
+    await db.setCollection('sports');
 
-    // Convert eventId to ObjectId
-    let eventObjectId;
+    // Get user info from the authenticated token
+    const user = req.user;
+
+    // Find the event by id
+    let objectId;
     try {
-      eventObjectId = new ObjectId(eventId);
+      objectId = new ObjectId(eventId);
     } catch {
       return res.status(400).json({ message: "Invalid eventId format" });
     }
 
-    // Find the event
-    const event = await db.collection.findOne({ _id: eventObjectId });
+    const event = await db.collection.findOne({ _id: objectId });
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Check if user is already an attendee
+    // Check if user already joined
     const attendees = event.attendees || [];
-    if (attendees.includes(userId)) {
-      return res.status(200).json({ message: "You are already attending this event", event });
+    const alreadyJoined = attendees.some(a => a.odId?.toString() === user.id?.toString());
+
+    if (alreadyJoined) {
+      return res.status(200).json({ message: "You have already joined this event", alreadyJoined: true });
     }
 
-    // Add user to attendees array
-    const result = await db.collection.updateOne(
-      { _id: eventObjectId },
-      { $addToSet: { attendees: userId } }
+    // Add user to attendees
+    const attendeeData = {
+      odId: new ObjectId(user.id),
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      joinedAt: new Date()
+    };
+
+    await db.collection.updateOne(
+      { _id: objectId },
+      { $push: { attendees: attendeeData } }
     );
 
-    if (result.modifiedCount === 0) {
-      return res.status(500).json({ message: "Failed to add user to event" });
-    }
-
-    const updatedEvent = await db.collection.findOne({ _id: eventObjectId });
-    return res.status(200).json({ message: "Successfully added to event", event: updatedEvent });
+    return res.status(200).json({
+      message: "Successfully joined the event",
+      attendee: attendeeData
+    });
 
   } catch (err) {
     console.error(err);
@@ -193,66 +193,33 @@ app.post('/addUserToEvent', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/removeUserFromEvent', authenticateToken, async (req, res) => {
-  const { eventId } = req.body;
-  const userId = req.user.id;
-
-  if (!eventId) {
-    return res.status(400).json({ message: "eventId is required" });
-  }
+app.get('/api/event/:id/attendees', authenticateToken, async (req, res) => {
+  const { id } = req.params;
 
   try {
-    await db.setCollection('ProjectCollection');
+    await db.setCollection('sports');
 
-    let eventObjectId;
+    let objectId;
     try {
-      eventObjectId = new ObjectId(eventId);
+      objectId = new ObjectId(id);
     } catch {
-      return res.status(400).json({ message: "Invalid eventId format" });
+      return res.status(400).json({ message: "Invalid event ID format" });
     }
 
-    const event = await db.collection.findOne({ _id: eventObjectId });
+    const event = await db.collection.findOne({ _id: objectId });
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const result = await db.collection.updateOne(
-      { _id: eventObjectId },
-      { $pull: { attendees: userId } }
-    );
+    // Return attendees with only name (privacy: no email)
+    const attendees = (event.attendees || []).map(a => ({
+      odId: a.odId,
+      firstName: a.firstName,
+      lastName: a.lastName,
+      joinedAt: a.joinedAt
+    }));
 
-    if (result.modifiedCount === 0) {
-      return res.status(200).json({ message: "You were not attending this event" });
-    }
-
-    const updatedEvent = await db.collection.findOne({ _id: eventObjectId });
-    return res.status(200).json({ message: "Successfully removed from event", event: updatedEvent });
-
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-});
-
-app.get('/eventAttendees/:eventId', authenticateToken, async (req, res) => {
-  const { eventId } = req.params;
-
-  try {
-    await db.setCollection('ProjectCollection');
-
-    let eventObjectId;
-    try {
-      eventObjectId = new ObjectId(eventId);
-    } catch {
-      return res.status(400).json({ message: "Invalid eventId format" });
-    }
-
-    const event = await db.collection.findOne({ _id: eventObjectId });
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    return res.status(200).json({ attendees: event.attendees || [] });
+    return res.status(200).json({ attendees, count: attendees.length });
 
   } catch (err) {
     console.error(err);
@@ -277,7 +244,7 @@ app.use((err, req, res, next) => {
 
 if(db.db){ 
   // bind it to as server to be able to use the .close() function
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT,"0.0.0.0", () => {
     console.log(`Example app app listening at http://localhost:${PORT}`);
   });
   // in case it's a linux/unix/mac
