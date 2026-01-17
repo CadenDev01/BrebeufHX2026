@@ -9,14 +9,26 @@ const Map = () => {
   const [activity, setActivity] = useState('');
   const [location, setLocation] = useState('');
   const [venue, setVenue] = useState('');
+  const [filteredResults, setFilteredResults] = useState([]);
 
   const handleSearch = () => {
-    // You can use these values to perform your search
-    console.log('Activity:', activity);
-    console.log('Location:', location);
-    console.log('Venue:', venue);
-    // Add your search logic here
-  };
+  // Basic validation: prevent empty or suspicious input
+  const isValid = (str) =>
+    typeof str === "string" &&
+    str.length <= 100 &&
+    /^[\w\s\-.,']*$/i.test(str); // Only allow letters, numbers, spaces, and some punctuation
+
+  if (![activity, location, venue].every(isValid)) {
+    alert("Invalid input detected. Please use only letters, numbers, spaces, and basic punctuation.");
+    return;
+  }
+
+  fetch(
+    `/api/filter?activity=${encodeURIComponent(activity)}&location=${encodeURIComponent(location)}&venue=${encodeURIComponent(venue)}`
+  )
+    .then((res) => res.json())
+    .then((data) => setFilteredResults(data.results || []));
+};
 
   return (
     <>
