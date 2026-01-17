@@ -1,3 +1,8 @@
+import Navbar from './components/Navbar'
+import Hero from './components/Hero'
+import SportCard from './components/SportCard'
+import QuickActions from './components/QuickActions'
+import ChatBot from './components/ChatBot'
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import SportCard from './components/SportCard';
@@ -27,11 +32,11 @@ function Home() {
       <QuickActions />
 
       {/* Sports Grid */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold">Popular Sports Near You</h2>
-          <button className="text-purple-400 hover:text-purple-300 font-semibold">
-            View All →
+          <h2 className="text-2xl font-bold">Available Sports</h2>
+          <button className="text-purple-400 hover:text-purple-300 font-medium text-sm">
+            View All
           </button>
         </div>
 
@@ -43,19 +48,22 @@ function Home() {
       </div>
 
       {/* Footer CTA */}
-      <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-        <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm rounded-3xl p-12 border border-purple-500/20">
-          <h2 className="text-4xl font-bold mb-4">
-            Stop Waiting. Start Playing.
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-16 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Ready to Play?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Join thousands of athletes connecting every day.
+          <p className="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto">
+            Join our community and start connecting with players in your area today.
           </p>
-          <button className="px-10 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 glow-effect-green">
-            Get Started Free
+          <button className="px-10 py-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold text-lg transition-colors duration-200">
+            Get Started
           </button>
         </div>
       </div>
+
+      {/* AI ChatBot */}
+      <ChatBot />
     </div>
   );
 }

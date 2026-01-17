@@ -1,3 +1,5 @@
+import sportifyLogo from '../assets/sportify_logo.png'
+
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
@@ -7,11 +9,9 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="text-3xl">⚡</div>
-            <h1 className="text-2xl font-black">
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-green-400 text-transparent bg-clip-text">
-                Sportify
-              </span>
+            <img src={sportifyLogo} alt="Sportify" className="h-9 w-9 object-contain" />
+            <h1 className="text-xl font-bold text-white">
+              Sportify
             </h1>
           </div>
 
@@ -30,11 +30,11 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="flex items-center gap-3">
-            <button className="hidden sm:block px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium">
+            <button className="hidden sm:block px-4 py-2 text-gray-400 hover:text-white transition-colors text-sm font-medium">
               Sign In
             </button>
-            <button className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105">
-              Join Now
+            <button className="px-5 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold transition-colors duration-200">
+              Sign Up
             </button>
           </div>
         </div>
