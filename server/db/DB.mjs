@@ -53,6 +53,11 @@ export class DB {
     console.log(`Collection set to ${collectionName}`);
   }
 
+  async createMany(documents) {
+    const result = await instance.collection.insertMany(documents);
+    return result.insertedCount; 
+  }
+
   // This basically uses the .drop to remove the collection
   async dropCollection(collectionName) {
     if (!instance.db) throw new Error('DB not connected. Call connect() first.');
