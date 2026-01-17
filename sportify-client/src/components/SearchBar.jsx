@@ -19,39 +19,69 @@ const SearchBar = ({
   onChange,
   placeholder = "Search...",
   showButton = true,
-  endpoint,
+  searchFields = ["city"],
+  getBody = (value) => ({ city: value.toLowerCase(), limit: 20 }),
 }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Use the endpoint prop or fallback to a default
-  const ENDPOINT = endpoint || "https://your-api.com/search?q=";
+  
+  // useEffect(() => {
+  //   if (!value || value.trim().length === 0) {
+  //     setSuggestions([]);
+  //     setError(null);
+  //     return;
+  //   }
 
-  useEffect(() => {
-    if (!value) {
-      setSuggestions([]);
-      setError(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    fetch(`${ENDPOINT}${encodeURIComponent(value)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.json();
-      })
-      .then((data) => {
-        setSuggestions(data.results || []);
-        setError(null);
-      })
-      .catch(() => {
-        setSuggestions([]);
-        setError("Failed to fetch suggestions.");
-      })
-      .finally(() => setLoading(false));
-  }, [value, ENDPOINT]);
+  //   const controller = new AbortController();
+
+  //   const fetchSuggestions = async () => {
+  //     try {
+  //       setLoading(true);
+  //       setError(null);
+
+  //       const res = await fetch("/search", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         signal: controller.signal,
+  //         body: JSON.stringify(getBody(value)),
+  //       });
+
+  //       if (!res.ok) throw new Error("Fetch failed");
+
+  //       const data = await res.json();
+
+  //       // 🔍 Match ANY field
+  //       const filtered = Array.isArray(data)
+  //         ? data.filter((item) =>
+  //             searchFields.some((field) => {
+  //               const fieldValue = item?.[field];
+  //               return (
+  //                 typeof fieldValue === "string" &&
+  //                 fieldValue.toLowerCase().includes(value.toLowerCase())
+  //               );
+  //             })
+  //           )
+  //         : [];
+
+  //       setSuggestions(filtered);
+  //     } catch (err) {
+  //       if (err.name !== "AbortError") {
+  //         setError("Failed to fetch suggestions");
+  //         setSuggestions([]);
+  //       }
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchSuggestions();
+  //   return () => controller.abort();
+  // }, [value, getBody, searchFields]);
 
   const handleChange = (e) => {
     onChange(e.target.value);

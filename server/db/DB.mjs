@@ -53,6 +53,13 @@ export class DB {
     console.log(`Collection set to ${collectionName}`);
   }
 
+  find(filter = {}) {
+    if (!this.collection) {
+      throw new Error('Collection not set. Call setCollection() first.');
+    }
+    return this.collection.find(filter); 
+  }
+
   async createMany(documents) {
     const result = await instance.collection.insertMany(documents);
     return result.insertedCount; 

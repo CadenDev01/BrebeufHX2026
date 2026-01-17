@@ -4,6 +4,7 @@ import compression from 'compression';
 import {db} from './db/DB.mjs';
 import process from 'node:process'; 
 if(db.db === null) await db.connect();
+await db.setCollection('ProjectCollection');
 const PORT = process.env.PORT || 3000;
   
 const app = express();
@@ -23,10 +24,11 @@ app.get('/', (req, res) => {
 // Example allowed lists
 const allowedSports = ['soccer', 'basketball', 'tennis'];
 const allowedSportTypes = ['indoor', 'outdoor'];
-const allowedCities = ['new york', 'los angeles', 'chicago'];
+const allowedCities = ['montreal', 'laval', 'chicago'];
 const allowedRegions = ['north', 'south', 'east', 'west'];
 
-app.post('/search', async (req, res, next) => {
+app.post('/api/search', async (req, res, next) => {
+  console.log('llllllllll');
   try {
     const {
       sport,
@@ -83,6 +85,7 @@ app.post('/search', async (req, res, next) => {
 
     // Execute query
     let resultsQuery = db.find(query);
+    console.log('Query:', query);
 
     // Validate and apply limit
     if (limit !== null) {
