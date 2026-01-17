@@ -10,6 +10,7 @@
     "lint": "npx eslint server/**/**/*.mjs client/src/**/*.jsx server/bin/www"
   },
   "dependencies": {
+    "compression": "^1.8.1",
     "csv-parse": "^6.1.0",
     "eslint": "^9.38.0",
     "mocha": "^11.7.4",

@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import compression from 'compression';
-import {db} from 'db/DB.mjs';
+import {db} from './db/DB.mjs';
 import process from 'node:process'; 
 if(db.db === null) await db.connect();
 const PORT = process.env.PORT || 3000;
@@ -179,7 +179,6 @@ if(db.db){
   // bind it to as server to be able to use the .close() function
   const server = app.listen(PORT, () => {
     console.log(`Example app app listening at http://localhost:${PORT}`);
-    console.log("Swagger docs available at http://localhost:3000/api-docs");
   });
   // in case it's a linux/unix/mac
   process.on('SIGINT', () => {
