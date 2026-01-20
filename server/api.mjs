@@ -6,6 +6,9 @@ import {db} from './db/DB.mjs';
 import { ObjectId } from 'mongodb';
 import process from 'node:process';
 import authRoutes from './routes/auth.mjs';
+import relationshipsRoutes from './routes/relationships.mjs';
+import conversationsRoutes from './routes/conversations.mjs';
+import messagesRoutes from './routes/messages.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
 
 if(db.db === null) await db.connect();
@@ -42,6 +45,9 @@ app.use(compression());
 app.use(express.static('./client/dist/'));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/relationships', relationshipsRoutes);
+app.use('/api/conversations', conversationsRoutes);
+app.use('/api/messages', messagesRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve('./client/dist/index.html'));

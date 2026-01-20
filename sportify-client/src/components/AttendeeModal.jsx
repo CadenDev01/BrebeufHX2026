@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const AttendeeModal = ({ eventId, eventName, onClose }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [attendees, setAttendees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -62,23 +66,50 @@ const AttendeeModal = ({ eventId, eventName, onClose }) => {
 
           {!loading && !error && attendees.length > 0 && (
             <ul className="divide-y divide-gray-200">
-              {attendees.map((attendee, index) => (
-                <li key={attendee.odId || index} className="py-3 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">
-                    {attendee.firstName?.[0]}{attendee.lastName?.[0]}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {attendee.firstName} {attendee.lastName}
-                    </p>
-                    {attendee.joinedAt && (
-                      <p className="text-sm text-gray-500">
-                        Joined {new Date(attendee.joinedAt).toLocaleDateString()}
-                      </p>
+              {attendees.map((attendee, index) => {
+                const isMe = attendee.odId === user?._id || attendee.odId?.toString() === user?._id?.toString();
+                return (
+                  <li key={attendee.odId || index} className="py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">
+                        {attendee.firstName?.[0]}{attendee.lastName?.[0]}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {attendee.firstName} {attendee.lastName} {isMe && <span className="text-purple-600">(You)</span>}
+                        </p>
+                        {attendee.joinedAt && (
+                          <p className="text-sm text-gray-500">
+                            Joined {new Date(attendee.joinedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {!isMe && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await makeAuthenticatedRequest('/api/conversations/dm', {
+                              method: 'POST',
+                              body: JSON.stringify({ recipientId: attendee.odId })
+                            });
+                            if (res.ok) {
+                              const data = await res.json();
+                              onClose();
+                              navigate(`/messages/${data.conversation._id}`);
+                            }
+                          } catch (error) {
+                            console.error('Error starting DM:', error);
+                          }
+                        }}
+                        className="px-3 py-1 text-xs bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+                      >
+                        Message
+                      </button>
                     )}
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

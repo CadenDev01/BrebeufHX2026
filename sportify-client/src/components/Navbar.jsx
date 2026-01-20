@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import sportifyLogo from '../assets/sportify_logo.png'
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { makeAuthenticatedRequest } from '../utils/api';
 
 /**
  * Navbar component for Sportify.
@@ -17,6 +18,26 @@ import { useAuth } from '../context/AuthContext';
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchUnread = async () => {
+        try {
+          const res = await makeAuthenticatedRequest('/api/messages/unread/count');
+          if (res.ok) {
+            const data = await res.json();
+            setUnreadCount(data.totalUnread || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching unread count:', error);
+        }
+      };
+      fetchUnread();
+      const interval = setInterval(fetchUnread, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     await logout();
@@ -42,6 +63,21 @@ const Navbar = () => {
             <Link to="/map" className="text-gray-300 hover:text-white transition-colors font-medium">
               Find Activities
             </Link>
+            {isAuthenticated && (
+              <>
+                <Link to="/friends" className="text-gray-300 hover:text-white transition-colors font-medium">
+                  Friends
+                </Link>
+                <Link to="/messages" className="text-gray-300 hover:text-white transition-colors font-medium relative">
+                  Messages
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
             <Link to="/about" className="text-gray-300 hover:text-white transition-colors font-medium">
               About Us
             </Link>
@@ -112,6 +148,29 @@ const Navbar = () => {
               >
                 Find Activities
               </Link>
+              {isAuthenticated && (
+                <>
+                  <Link
+                    to="/friends"
+                    className="text-gray-300 hover:text-white transition-colors font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Friends
+                  </Link>
+                  <Link
+                    to="/messages"
+                    className="text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Messages
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
+              )}
               <Link
                 to="/about"
                 className="text-gray-300 hover:text-white transition-colors font-medium"
