@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.mjs';
 import relationshipsRoutes from './routes/relationships.mjs';
 import conversationsRoutes from './routes/conversations.mjs';
 import messagesRoutes from './routes/messages.mjs';
+import adminRoutes from './routes/admin.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
 
 if(db.db === null) await db.connect();
@@ -48,6 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/relationships', relationshipsRoutes);
 app.use('/api/conversations', conversationsRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve('./client/dist/index.html'));
