@@ -6,6 +6,9 @@ import {db} from './db/DB.mjs';
 import { ObjectId } from 'mongodb';
 import process from 'node:process';
 import authRoutes from './routes/auth.mjs';
+import relationshipsRoutes from './routes/relationships.mjs';
+import conversationsRoutes from './routes/conversations.mjs';
+import messagesRoutes from './routes/messages.mjs';
 import { authenticateToken } from './middleware/auth.mjs';
 
 if(db.db === null) await db.connect();
@@ -14,9 +17,23 @@ const PORT = process.env.PORT || 3000;
 
 const app = express();
 
-// Enable CORS for development
+// Enable CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:80',
+  'http://localhost',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Allow all origins in production for now
+  },
   credentials: true
 }));
 
@@ -28,6 +45,9 @@ app.use(compression());
 app.use(express.static('./client/dist/'));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/relationships', relationshipsRoutes);
+app.use('/api/conversations', conversationsRoutes);
+app.use('/api/messages', messagesRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve('./client/dist/index.html'));

@@ -12,6 +12,8 @@ import { Link } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import FriendsPage from './pages/FriendsPage';
+import MessagesPage from './pages/MessagesPage';
 
 function Home() {
   const { isAuthenticated } = useAuth();
@@ -107,6 +109,11 @@ function App() {
         {/* Login & Register Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* Social & Messaging (Protected) */}
+        <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+        <Route path="/messages/:conversationId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   );

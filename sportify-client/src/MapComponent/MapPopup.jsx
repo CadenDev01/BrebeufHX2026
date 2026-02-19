@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Popup } from 'react-leaflet';
 import { useAuth } from '../context/AuthContext';
 import AttendeeModal from '../components/AttendeeModal';
@@ -10,6 +11,7 @@ const getDisplayValue = (value) => {
 };
 
 const MapPopup = ({ item, onJoinSuccess, currentUserId }) => {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [showAttendees, setShowAttendees] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -99,6 +101,26 @@ const MapPopup = ({ item, onJoinSuccess, currentUserId }) => {
                 className="px-4 py-2 text-sm text-white font-bold rounded-md shadow-md bg-green-600 hover:bg-green-700 transition-all duration-200"
               >
                 View Attendees ({attendeeCount})
+              </button>
+            )}
+
+            {/* Event Chat Button */}
+            {isAuthenticated && alreadyJoined && (
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await makeAuthenticatedRequest(`/api/conversations/event/${item._id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      navigate(`/messages/${data.conversation._id}`);
+                    }
+                  } catch (error) {
+                    console.error('Error opening event chat:', error);
+                  }
+                }}
+                className="px-4 py-2 text-sm text-white font-bold rounded-md shadow-md bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+              >
+                Event Chat
               </button>
             )}
 

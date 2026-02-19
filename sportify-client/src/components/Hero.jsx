@@ -19,6 +19,21 @@ const Hero = () => {
 
   return (
     <div className="relative overflow-hidden py-16 px-4">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+      >
+        <source src="/sports-video.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {/* Dark Overlay for text readability */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-[1]"></div>
+
       <div className="relative z-10 max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
