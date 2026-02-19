@@ -51,8 +51,9 @@ app.use('/api/conversations', conversationsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Health check endpoint for root
 app.get('/', (req, res) => {
-  res.sendFile(path.resolve('./client/dist/index.html'));
+  res.json({ status: 'ok', message: 'Sportify API is running' });
 });
 
 ///////////////////////////////////////////////////////
