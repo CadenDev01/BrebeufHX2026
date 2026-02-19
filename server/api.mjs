@@ -51,9 +51,17 @@ app.use('/api/conversations', conversationsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Serve static client files
+app.use(express.static(path.join(process.cwd(), 'sportify-client/dist')));
+
 // Health check endpoint for root
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Sportify API is running' });
+  res.sendFile(path.join(process.cwd(), 'sportify-client/dist/index.html'));
+});
+
+// Catch-all for client-side routing - serve index.html for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'sportify-client/dist/index.html'));
 });
 
 ///////////////////////////////////////////////////////
