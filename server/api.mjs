@@ -43,7 +43,7 @@ app.use(express.json({ limit: '10kb' }));
 
 app.use(compression());
 
-app.use(express.static('./client/dist/'));
+app.use(express.static(path.join(process.cwd(), 'sportify-client/dist')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/relationships', relationshipsRoutes);
@@ -51,16 +51,8 @@ app.use('/api/conversations', conversationsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve static client files
-app.use(express.static(path.join(process.cwd(), 'sportify-client/dist')));
-
-// Health check endpoint for root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'sportify-client/dist/index.html'));
-});
-
-// Catch-all for client-side routing - serve index.html for any non-API routes
-app.get('*', (req, res) => {
+// Catch-all for client-side routing - serve index.html for any non-API/non-static routes
+app.use((req, res) => {
   res.sendFile(path.join(process.cwd(), 'sportify-client/dist/index.html'));
 });
 
