@@ -1,7 +1,18 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 // this is not needed for this version of node but I want it to be able to run earlier versions
 import process from 'node:process'; 
-process.loadEnvFile();
+
+// Load .env file if it exists (for local development)
+// On Render and other platforms, environment variables are set directly
+try {
+  process.loadEnvFile();
+} catch (err) {
+  // .env file doesn't exist - this is normal on Render
+  // Environment variables should be set in the deployment platform
+  if (err.code !== 'ENOENT') {
+    throw err; // Re-throw if it's a different error
+  }
+}
 
 const dbUrl = process.env.ATLAS_URI;
 const cluster = process.env.CLUSTER;
