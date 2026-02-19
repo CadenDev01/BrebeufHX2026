@@ -16,6 +16,10 @@ const MessagesPage = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [activeConversation, setActiveConversation] = useState(null);
   const [showNewGroup, setShowNewGroup] = useState(false);
+  const [showNewDM, setShowNewDM] = useState(false);
+  const [dmSearch, setDmSearch] = useState('');
+  const [dmResults, setDmResults] = useState([]);
+  const [dmSearching, setDmSearching] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Fetch conversations
@@ -102,6 +106,45 @@ const MessagesPage = () => {
     navigate(`/messages/${conv._id}`);
   };
 
+  // Search for users to DM
+  const searchUsers = async (query) => {
+    if (!query.trim()) {
+      setDmResults([]);
+      return;
+    }
+    setDmSearching(true);
+    try {
+      const res = await makeAuthenticatedRequest(`/api/relationships/search?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDmResults(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+    setDmSearching(false);
+  };
+
+  // Start DM with user
+  const startDM = async (recipientId) => {
+    try {
+      const res = await makeAuthenticatedRequest('/api/conversations/dm', {
+        method: 'POST',
+        body: JSON.stringify({ recipientId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setShowNewDM(false);
+        setDmSearch('');
+        setDmResults([]);
+        fetchConversations();
+        navigate(`/messages/${data.conversation._id}`);
+      }
+    } catch (error) {
+      console.error('Error starting DM:', error);
+    }
+  };
+
   const getConversationName = (conv) => {
     if (conv.type === 'group' || conv.type === 'event') {
       return conv.name;
@@ -143,15 +186,26 @@ const MessagesPage = () => {
           <div className="w-80 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex flex-col">
             <div className="p-4 border-b border-slate-700 flex items-center justify-between">
               <h2 className="text-white font-semibold">Messages</h2>
-              <button
-                onClick={() => setShowNewGroup(true)}
-                className="p-2 text-purple-400 hover:text-purple-300 transition-colors"
-                title="New Group"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowNewDM(true)}
+                  className="p-2 text-purple-400 hover:text-purple-300 transition-colors"
+                  title="New Message"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowNewGroup(true)}
+                  className="p-2 text-purple-400 hover:text-purple-300 transition-colors"
+                  title="New Group"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -297,6 +351,61 @@ const MessagesPage = () => {
             navigate(`/messages/${conv._id}`);
           }}
         />
+      )}
+
+      {showNewDM && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl w-full max-w-md border border-slate-700">
+            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+              <h3 className="text-white font-semibold">New Message</h3>
+              <button
+                onClick={() => { setShowNewDM(false); setDmSearch(''); setDmResults([]); }}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <input
+                type="text"
+                value={dmSearch}
+                onChange={(e) => { setDmSearch(e.target.value); searchUsers(e.target.value); }}
+                placeholder="Search by name or username..."
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                autoFocus
+              />
+              <div className="mt-3 max-h-64 overflow-y-auto">
+                {dmSearching ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                  </div>
+                ) : dmResults.length > 0 ? (
+                  dmResults.map(u => (
+                    <div
+                      key={u._id}
+                      onClick={() => startDM(u._id)}
+                      className="flex items-center gap-3 p-3 hover:bg-slate-700 rounded-lg cursor-pointer transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {u.firstName?.[0]}{u.lastName?.[0]}
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">{u.firstName} {u.lastName}</p>
+                        <p className="text-gray-400 text-sm">@{u.username}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : dmSearch.trim() ? (
+                  <p className="text-gray-400 text-center py-4">No users found</p>
+                ) : (
+                  <p className="text-gray-400 text-center py-4 text-sm">Type to search for users</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

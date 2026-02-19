@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
@@ -15,40 +16,62 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      const storedToken = localStorage.getItem('token');
+  const verifyToken = async (tokenToVerify) => {
+    if (!tokenToVerify) {
+      setUser(null);
+      setToken(null);
+      setLoading(false);
+      return;
+    }
 
-      if (!storedToken) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/auth/verify', {
-          headers: {
-            'Authorization': `Bearer ${storedToken}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-          setToken(storedToken);
-        } else {
-          localStorage.removeItem('token');
-          setToken(null);
+    try {
+      const response = await fetch('/api/auth/verify', {
+        headers: {
+          'Authorization': `Bearer ${tokenToVerify}`
         }
-      } catch (error) {
-        console.error('Token verification failed:', error);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        setToken(tokenToVerify);
+      } else {
         localStorage.removeItem('token');
         setToken(null);
-      } finally {
-        setLoading(false);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial token verification
+  useEffect(() => {
+    verifyToken(localStorage.getItem('token'));
+  }, []);
+
+  // Sync auth state across tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        if (e.newValue) {
+          // Another tab logged in - verify and sync
+          verifyToken(e.newValue);
+        } else {
+          // Another tab logged out - sync logout
+          setUser(null);
+          setToken(null);
+        }
       }
     };
 
-    verifyToken();
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const login = async (email, password) => {

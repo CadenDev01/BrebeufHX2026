@@ -76,6 +76,11 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
+                {user?.roles?.includes('admin') && (
+                  <Link to="/admin" className="text-purple-400 hover:text-purple-300 transition-colors font-medium">
+                    Admin
+                  </Link>
+                )}
               </>
             )}
             <Link to="/about" className="text-gray-300 hover:text-white transition-colors font-medium">
@@ -169,6 +174,15 @@ const Navbar = () => {
                       </span>
                     )}
                   </Link>
+                  {user?.roles?.includes('admin') && (
+                    <Link
+                      to="/admin"
+                      className="text-purple-400 hover:text-purple-300 transition-colors font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
                 </>
               )}
               <Link
