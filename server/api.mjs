@@ -51,11 +51,6 @@ app.use('/api/conversations', conversationsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Catch-all for client-side routing - serve index.html for any non-API/non-static routes
-app.use((req, res) => {
-  res.sendFile(path.join(process.cwd(), 'sportify-client/dist/index.html'));
-});
-
 ///////////////////////////////////////////////////////
 
 // Example allowed lists
@@ -253,6 +248,12 @@ app.get('/api/event/:id/attendees', authenticateToken, async (req, res) => {
 
 ///////////////////////////////////////////////////////
 
+
+// Catch-all for client-side routing - serve index.html for any non-API/non-static routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  res.sendFile(path.join(process.cwd(), 'sportify-client/dist/index.html'));
+});
 
 // no endpoint found
 app.use(function (req, res) {
